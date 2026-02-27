@@ -1,0 +1,2162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Vital — Health Intelligence OS</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#F7F8FA;--surface:#FFFFFF;--card:#FFFFFF;--border:#EAECF0;--border2:#D0D5DD;
+  --text:#0A0D14;--text2:#344054;--muted:#667085;
+  --blue:#0052CC;--blue-l:#1570EF;--blue-bg:#EBF5FF;--blue-mid:#DBEAFE;
+  --teal:#027A48;--teal-bg:#ECFDF3;--teal-l:#12B76A;
+  --amber:#B54708;--amber-bg:#FFFAEB;--amber-l:#F79009;
+  --red:#B42318;--red-bg:#FEF3F2;--red-l:#F04438;
+  --violet:#5925DC;--violet-bg:#F4F3FF;
+  --cyan:#0E7090;--cyan-bg:#ECFEFF;
+  --font-head:'Syne',sans-serif;--font-body:'DM Sans',sans-serif;--font-mono:'DM Mono',monospace;
+  --r:16px;--r-sm:10px;
+  --shadow:0 1px 3px rgba(16,24,40,.06),0 4px 16px rgba(16,24,40,.08);
+  --shadow-lg:0 8px 32px rgba(16,24,40,.14);
+  --glow-blue:0 0 24px rgba(0,82,204,.3);
+  --sidebar-w:240px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{width:100%;height:100%;overflow:hidden;-webkit-font-smoothing:antialiased;}
+body{background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:14px;line-height:1.5;}
+button{cursor:pointer;font-family:var(--font-body);}
+input,select,textarea{font-family:var(--font-body);}
+
+.page{display:none;width:100%;height:100vh;overflow:hidden;}
+.page.active{display:flex;}
+@keyframes up{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+@keyframes scanLine{0%{transform:translateY(-100%)}100%{transform:translateY(400%)}}
+@keyframes rotate3d{0%{transform:rotateY(0deg)}100%{transform:rotateY(360deg)}}
+@keyframes glow{0%,100%{filter:drop-shadow(0 0 4px rgba(0,150,255,.4))}50%{filter:drop-shadow(0 0 12px rgba(0,150,255,.9))}}
+@keyframes dataFlow{0%{stroke-dashoffset:100}100%{stroke-dashoffset:0}}
+@keyframes heartbeat{0%,100%{transform:scale(1)}14%{transform:scale(1.15)}28%{transform:scale(1)}}
+
+/* ─── AUTH ─── */
+.auth-wrap{display:grid;grid-template-columns:1fr 480px;width:100%;height:100vh;}
+.auth-left{
+  background:#020912;
+  display:flex;flex-direction:column;justify-content:space-between;padding:52px 56px;
+  position:relative;overflow:hidden;
+}
+.auth-bg-grid{position:absolute;inset:0;background-image:
+  linear-gradient(rgba(0,82,204,.08) 1px,transparent 1px),
+  linear-gradient(90deg,rgba(0,82,204,.08) 1px,transparent 1px);
+  background-size:40px 40px;pointer-events:none;}
+.auth-glow-1{position:absolute;top:-120px;left:-120px;width:500px;height:500px;background:radial-gradient(circle,rgba(0,82,204,.18),transparent 70%);pointer-events:none;}
+.auth-glow-2{position:absolute;bottom:-100px;right:-80px;width:400px;height:400px;background:radial-gradient(circle,rgba(0,150,255,.12),transparent 70%);pointer-events:none;}
+
+.auth-brand-lg{display:flex;align-items:center;gap:14px;z-index:2;position:relative;}
+.auth-logo-mark{width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,#0052CC,#0096FF);display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(0,82,204,.4);}
+.auth-logo-mark svg{width:22px;height:22px;stroke:#fff;stroke-width:2.5;fill:none;}
+.auth-brand-lg .brand-name{font-family:var(--font-head);font-size:26px;font-weight:800;color:#fff;letter-spacing:-.5px;}
+.auth-brand-lg .brand-tag{font-size:11px;color:rgba(255,255,255,.35);letter-spacing:2px;text-transform:uppercase;}
+
+.auth-hero{z-index:2;position:relative;flex:1;display:flex;flex-direction:column;justify-content:center;padding:40px 0;}
+.auth-hero h1{font-family:var(--font-head);font-size:58px;font-weight:800;line-height:1.05;color:#fff;letter-spacing:-1.5px;margin-bottom:20px;}
+.auth-hero h1 .hl{color:#0096FF;}
+.auth-hero p{font-size:15px;color:rgba(255,255,255,.45);line-height:1.8;max-width:400px;}
+
+/* 3D Body preview in auth */
+.auth-body-preview{position:absolute;right:40px;top:50%;transform:translateY(-50%);opacity:.15;pointer-events:none;}
+
+.auth-stat-strip{display:flex;gap:0;z-index:2;position:relative;border:1px solid rgba(255,255,255,.08);border-radius:14px;overflow:hidden;background:rgba(255,255,255,.03);backdrop-filter:blur(8px);}
+.astat{flex:1;padding:20px;border-right:1px solid rgba(255,255,255,.06);}
+.astat:last-child{border:none;}
+.astat .n{font-family:var(--font-head);font-size:30px;font-weight:700;color:#0096FF;}
+.astat .l{font-size:10px;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:1px;margin-top:3px;}
+
+.auth-right{background:#fff;display:flex;align-items:center;justify-content:center;padding:40px;overflow-y:auto;border-left:1px solid #eee;}
+.auth-form-wrap{width:100%;max-width:380px;}
+.auth-step{display:none;}
+.auth-step.active{display:block;animation:up .3s cubic-bezier(.22,1,.36,1);}
+.step-indicator{display:flex;gap:4px;margin-bottom:24px;}
+.step-dot{height:3px;flex:1;border-radius:2px;background:var(--border2);transition:background .3s;}
+.step-dot.done{background:var(--blue);}
+
+.auth-eyebrow{font-size:11px;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px;}
+.auth-title{font-family:var(--font-head);font-size:28px;font-weight:800;letter-spacing:-.5px;margin-bottom:4px;}
+.auth-sub{font-size:13px;color:var(--muted);margin-bottom:28px;line-height:1.6;}
+
+.fg{margin-bottom:14px;}
+.fg label{display:block;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px;}
+.fg input,.fg select,.fg textarea{width:100%;background:#FAFAFA;border:1.5px solid var(--border2);border-radius:var(--r-sm);padding:11px 14px;color:var(--text);font-size:13.5px;outline:none;transition:all .2s;}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--blue);background:#fff;box-shadow:0 0 0 3px rgba(0,82,204,.08);}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.btn-main-auth{width:100%;padding:13px;border:none;border-radius:var(--r-sm);background:var(--blue);color:#fff;font-size:14px;font-weight:700;font-family:var(--font-head);letter-spacing:.3px;transition:all .2s;margin-top:4px;}
+.btn-main-auth:hover{background:var(--blue-l);transform:translateY(-1px);box-shadow:0 8px 24px rgba(0,82,204,.3);}
+.auth-link{text-align:center;margin-top:16px;font-size:12.5px;color:var(--muted);}
+.auth-link a{color:var(--blue);cursor:pointer;font-weight:600;text-decoration:none;}
+.bmi-preview{background:var(--blue-bg);border:1.5px solid rgba(0,82,204,.15);border-radius:var(--r-sm);padding:12px;margin-bottom:14px;display:none;}
+.bmi-val-big{font-family:var(--font-head);font-size:32px;font-weight:700;color:var(--blue);}
+
+/* ─── APP SHELL ─── */
+.app-shell{display:flex;width:100%;height:100vh;overflow:hidden;}
+.sidebar{
+  width:var(--sidebar-w);min-width:var(--sidebar-w);
+  background:#020912;height:100vh;display:flex;flex-direction:column;
+  z-index:100;flex-shrink:0;border-right:1px solid rgba(255,255,255,.06);
+  position:relative;overflow:hidden;
+}
+.sb-bg-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(0,82,204,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(0,82,204,.05) 1px,transparent 1px);background-size:32px 32px;pointer-events:none;}
+.sb-top{padding:22px 16px 12px;position:relative;z-index:2;}
+.sb-brand{display:flex;align-items:center;gap:10px;margin-bottom:28px;}
+.sb-mark{width:32px;height:32px;border-radius:9px;background:linear-gradient(135deg,#0052CC,#0096FF);display:flex;align-items:center;justify-content:center;box-shadow:0 2px 12px rgba(0,82,204,.4);}
+.sb-mark svg{width:15px;height:15px;stroke:#fff;stroke-width:2.5;fill:none;}
+.sb-brand .brand-n{font-family:var(--font-head);font-size:18px;font-weight:800;color:#fff;letter-spacing:-.3px;}
+
+.sb-section{font-size:9px;font-weight:700;color:rgba(255,255,255,.2);text-transform:uppercase;letter-spacing:2px;padding:12px 12px 6px;position:relative;z-index:2;}
+.sb-nav{display:flex;flex-direction:column;gap:1px;padding:0 8px;position:relative;z-index:2;}
+.nav-item{display:flex;align-items:center;gap:9px;padding:9px 10px;border-radius:9px;cursor:pointer;color:rgba(255,255,255,.35);font-size:12.5px;font-weight:500;transition:all .15s;white-space:nowrap;}
+.nav-item:hover{color:rgba(255,255,255,.8);background:rgba(255,255,255,.06);}
+.nav-item.active{color:#fff;background:linear-gradient(135deg,rgba(0,82,204,.5),rgba(0,150,255,.3));box-shadow:0 2px 12px rgba(0,82,204,.2);}
+.nav-icon{font-size:14px;width:18px;text-align:center;flex-shrink:0;}
+.nav-badge{margin-left:auto;background:var(--red-l);color:#fff;border-radius:10px;padding:1px 7px;font-size:9px;font-weight:700;}
+
+.sb-bottom{margin-top:auto;padding:12px 16px;border-top:1px solid rgba(255,255,255,.06);position:relative;z-index:2;}
+.user-pill{display:flex;align-items:center;gap:10px;padding:10px;background:rgba(255,255,255,.05);border-radius:10px;margin-bottom:8px;cursor:pointer;}
+.user-av{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#0052CC,#0096FF);display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:700;flex-shrink:0;}
+.user-info .uname{font-size:13px;font-weight:600;color:#fff;}
+.user-info .urole{font-size:10px;color:#0096FF;font-weight:600;}
+.logout-btn{width:100%;padding:8px;border:1px solid rgba(255,255,255,.1);background:transparent;color:rgba(255,255,255,.4);border-radius:8px;font-size:12px;font-weight:500;transition:all .2s;}
+.logout-btn:hover{border-color:rgba(244,67,54,.5);color:#F44336;background:rgba(244,67,54,.1);}
+
+.main{flex:1;height:100vh;overflow-y:auto;overflow-x:hidden;background:var(--bg);}
+.inner-page{display:none;min-height:100vh;padding:28px 32px 80px;}
+.inner-page.active{display:block;animation:up .25s cubic-bezier(.22,1,.36,1);}
+
+.ph{margin-bottom:24px;display:flex;align-items:flex-start;justify-content:space-between;}
+.ph-left h1{font-family:var(--font-head);font-size:28px;font-weight:800;letter-spacing:-.5px;}
+.ph-left p{font-size:13px;color:var(--muted);margin-top:3px;}
+.ph-actions{display:flex;gap:8px;align-items:center;}
+
+/* GRIDS */
+.g2c{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.g3c{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;}
+.g4c{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
+
+/* CARDS */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:20px;box-shadow:var(--shadow);}
+.card-dark{background:#020912;border:1px solid rgba(255,255,255,.08);border-radius:var(--r);padding:20px;position:relative;overflow:hidden;}
+
+/* METRIC PILLS */
+.mpill{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px 18px;box-shadow:var(--shadow);transition:all .2s;cursor:pointer;}
+.mpill:hover{transform:translateY(-2px);box-shadow:var(--shadow-lg);}
+.mpill .icon{font-size:20px;margin-bottom:8px;}
+.mpill .val{font-family:var(--font-head);font-size:26px;font-weight:700;}
+.mpill .lbl{font-size:10.5px;color:var(--muted);margin-top:2px;font-weight:500;text-transform:uppercase;letter-spacing:.5px;}
+.mpill .chg{font-size:11.5px;margin-top:6px;font-weight:600;}
+.chg-g{color:var(--teal-l);}
+.chg-r{color:var(--red-l);}
+.chg-w{color:var(--amber-l);}
+
+/* BADGE */
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:50px;font-size:11px;font-weight:600;}
+.bg{background:var(--teal-bg);color:var(--teal);}
+.bw{background:var(--amber-bg);color:var(--amber);}
+.br{background:var(--red-bg);color:var(--red);}
+.bb{background:var(--blue-bg);color:var(--blue);}
+.bv{background:var(--violet-bg);color:var(--violet);}
+.bc{background:var(--cyan-bg);color:var(--cyan);}
+
+/* PROGRESS */
+.pbar{background:var(--border);border-radius:50px;height:5px;overflow:hidden;margin-top:6px;}
+.pfill{height:100%;border-radius:50px;transition:width 1.2s ease;}
+
+/* SECTION HEAD */
+.sh{font-family:var(--font-head);font-size:16px;font-weight:700;margin-bottom:14px;letter-spacing:-.2px;}
+
+/* BUTTONS */
+.btn{padding:9px 18px;border:none;border-radius:9px;font-size:13px;font-weight:600;transition:all .18s;cursor:pointer;font-family:var(--font-body);}
+.btn-blue{background:var(--blue);color:#fff;}
+.btn-blue:hover{background:var(--blue-l);}
+.btn-ghost{background:transparent;border:1.5px solid var(--border2);color:var(--text2);}
+.btn-ghost:hover{border-color:var(--blue);color:var(--blue);}
+.btn-sm{padding:6px 13px;font-size:12px;border-radius:8px;}
+.btn-dark{background:var(--text);color:#fff;}
+.btn-dark:hover{background:#1d2939;}
+
+.sep{border-top:1px solid var(--border);margin:18px 0 16px;}
+
+/* TOGGLE */
+.t-row{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border);}
+.t-row:last-child{border-bottom:none;}
+.t-lbl{font-size:13.5px;font-weight:500;}
+.t-desc{font-size:11.5px;color:var(--muted);margin-top:1px;}
+.toggle{position:relative;width:40px;height:22px;flex-shrink:0;}
+.toggle input{opacity:0;width:0;height:0;}
+.tslider{position:absolute;cursor:pointer;inset:0;background:#CBD5E0;border-radius:50px;transition:.25s;}
+.tslider:before{content:'';position:absolute;height:16px;width:16px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.25s;box-shadow:0 1px 3px rgba(0,0,0,.2);}
+.toggle input:checked+.tslider{background:var(--blue);}
+.toggle input:checked+.tslider:before{transform:translateX(18px);}
+
+/* BARS CHART */
+.cbars{display:flex;align-items:flex-end;gap:7px;padding:0 2px;}
+.cbar-w{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;}
+.cbar{width:100%;border-radius:5px 5px 0 0;min-height:3px;transition:height .9s ease;}
+.cbar-l{font-size:10px;color:var(--muted);}
+.cbar-v{font-family:var(--font-head);font-size:11px;font-weight:600;color:var(--text2);}
+
+/* SCORE RING */
+.score-ring{position:relative;width:130px;height:130px;margin:0 auto 10px;}
+.score-ring svg{transform:rotate(-90deg);}
+.score-inner{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.score-num{font-family:var(--font-head);font-size:38px;font-weight:800;}
+.score-lbl{font-size:10px;color:var(--muted);font-weight:500;letter-spacing:.5px;text-transform:uppercase;}
+
+/* DONUT */
+.donut-wrap{position:relative;width:120px;height:120px;flex-shrink:0;}
+.donut-wrap svg{transform:rotate(-90deg);}
+.donut-inner{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;}
+
+/* TABLE */
+.tbl{width:100%;border-collapse:collapse;}
+.tbl th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:var(--muted);font-weight:600;padding:9px 12px;border-bottom:1px solid var(--border);}
+.tbl td{padding:11px 12px;font-size:13px;border-bottom:1px solid var(--border);color:var(--text2);}
+.tbl tr:last-child td{border-bottom:none;}
+.tbl tr:hover td{background:var(--bg);}
+
+/* NOTIFICATION */
+.notif{position:fixed;top:20px;right:20px;padding:14px 18px;border-radius:14px;font-size:13px;font-weight:500;transform:translateY(-80px);opacity:0;transition:all .4s cubic-bezier(.22,1,.36,1);z-index:9999;box-shadow:var(--shadow-lg);max-width:320px;display:flex;align-items:center;gap:10px;}
+.notif.show{transform:translateY(0);opacity:1;}
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(60px);background:var(--text);color:#fff;padding:11px 22px;border-radius:50px;font-weight:500;font-size:13px;opacity:0;transition:all .3s;z-index:9998;box-shadow:var(--shadow-lg);pointer-events:none;}
+#toast.show{transform:translateX(-50%) translateY(0);opacity:1;}
+
+/* ─── 3D BODY TECHNICAL ─── */
+.body3d-wrap{position:relative;display:flex;align-items:center;justify-content:center;padding:20px 0;}
+.body3d-svg{filter:drop-shadow(0 0 12px rgba(0,150,255,.4));animation:glow 2.5s ease-in-out infinite;}
+.body3d-scan{position:absolute;inset:0;overflow:hidden;pointer-events:none;border-radius:8px;}
+.scan-beam{position:absolute;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,rgba(0,150,255,.8),transparent);animation:scanLine 3s linear infinite;}
+.body3d-rings{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;}
+.body3d-hud{position:absolute;font-size:9px;color:#0096FF;font-family:var(--font-mono);font-weight:500;letter-spacing:.5px;opacity:.7;}
+
+/* CHAT */
+.chat-shell{display:flex;flex-direction:column;height:calc(100vh - 160px);}
+.chat-messages{flex:1;overflow-y:auto;padding:4px 0 20px;display:flex;flex-direction:column;gap:12px;}
+.msg{display:flex;gap:8px;max-width:85%;}
+.msg.user{align-self:flex-end;flex-direction:row-reverse;}
+.msg-av{width:26px;height:26px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;}
+.msg-av.ai{background:var(--blue);color:#fff;}
+.msg-av.user{background:var(--text);color:#fff;}
+.msg-bubble{padding:11px 14px;border-radius:12px;font-size:13px;line-height:1.65;}
+.msg.ai .msg-bubble{background:var(--surface);border:1px solid var(--border);border-radius:3px 12px 12px 12px;}
+.msg.user .msg-bubble{background:var(--text);color:#fff;border-radius:12px 3px 12px 12px;}
+.typing-dot{width:5px;height:5px;border-radius:50%;background:var(--muted);animation:pulse 1.2s ease infinite;display:inline-block;margin:0 2px;}
+.typing-dot:nth-child(2){animation-delay:.2s;}
+.typing-dot:nth-child(3){animation-delay:.4s;}
+.chat-input-area{border-top:1px solid var(--border);padding-top:14px;}
+.chat-input-row{display:flex;gap:8px;align-items:flex-end;}
+.chat-input-row textarea{flex:1;background:var(--bg);border:1.5px solid var(--border2);border-radius:10px;padding:10px 13px;font-size:13px;resize:none;outline:none;color:var(--text);transition:border-color .2s;max-height:100px;}
+.chat-input-row textarea:focus{border-color:var(--blue);}
+.chat-send{padding:10px 18px;background:var(--blue);color:#fff;border:none;border-radius:10px;font-weight:600;font-size:13px;transition:all .18s;white-space:nowrap;}
+.chat-send:hover{background:var(--blue-l);}
+.upload-row{display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap;}
+.upload-btn{display:flex;align-items:center;gap:6px;padding:7px 13px;border:1.5px dashed var(--border2);border-radius:9px;background:transparent;color:var(--muted);font-size:12px;font-weight:500;transition:all .2s;}
+.upload-btn:hover{border-color:var(--blue);color:var(--blue);background:var(--blue-bg);}
+.upload-preview{display:none;position:relative;}
+.upload-preview img{height:44px;width:60px;object-fit:cover;border-radius:7px;border:1px solid var(--border);}
+.upload-remove{position:absolute;top:-5px;right:-5px;width:15px;height:15px;background:var(--text);color:#fff;border-radius:50%;border:none;font-size:9px;display:flex;align-items:center;justify-content:center;cursor:pointer;}
+
+/* WATER */
+.water-entry{display:flex;align-items:center;justify-content:space-between;padding:9px 13px;background:var(--blue-bg);border-radius:9px;}
+.water-entry .wtime{font-size:11px;color:var(--blue);font-weight:600;}
+.water-entry .wamt{font-family:var(--font-head);font-size:15px;font-weight:700;color:var(--blue);}
+
+/* LIFESTYLE PRED */
+.pred-card{border-radius:var(--r);padding:24px;position:relative;overflow:hidden;}
+.pred-bad{background:linear-gradient(135deg,#1A0505 0%,#3D0A0A 100%);}
+.pred-good{background:linear-gradient(135deg,#020E07 0%,#052A12 100%);}
+.pred-card h3{font-family:var(--font-head);font-size:22px;color:#fff;margin-bottom:8px;font-weight:800;}
+.pred-card p{font-size:13px;color:rgba(255,255,255,.6);line-height:1.75;}
+
+/* WATCH */
+.watch-connect{border:2px dashed var(--border2);border-radius:var(--r);padding:32px;text-align:center;cursor:pointer;transition:all .2s;}
+.watch-connect:hover{border-color:var(--blue);background:var(--blue-bg);}
+.watch-connected{background:#020912;border-radius:var(--r);padding:22px;border:1px solid rgba(0,150,255,.2);}
+.wm{background:rgba(255,255,255,.06);border-radius:10px;padding:14px;text-align:center;border:1px solid rgba(0,150,255,.1);}
+.wm .wmval{font-family:var(--font-head);font-size:22px;font-weight:700;color:#0096FF;}
+.wm .wmlbl{font-size:10px;color:rgba(255,255,255,.4);margin-top:2px;text-transform:uppercase;letter-spacing:.5px;}
+
+/* DISEASE */
+.drow{display:flex;align-items:center;justify-content:space-between;padding:13px 0;border-bottom:1px solid var(--border);cursor:pointer;transition:all .15s;}
+.drow:last-child{border-bottom:none;}
+.drow:hover{background:var(--bg);margin:0 -20px;padding:13px 20px;border-radius:9px;}
+.dname{font-size:13.5px;font-weight:500;}
+.dtrigger{font-size:11px;color:var(--muted);margin-top:2px;}
+.dpct{font-family:var(--font-head);font-size:20px;font-weight:700;}
+
+.disease-hero{border-radius:var(--r);padding:28px;margin-bottom:14px;background:#020912;border:1px solid rgba(0,150,255,.15);}
+.disease-risk-bar{height:6px;border-radius:3px;margin-top:10px;background:rgba(255,255,255,.1);overflow:hidden;}
+.disease-risk-fill{height:100%;border-radius:3px;transition:width 1s ease;}
+
+.detail-back{display:flex;align-items:center;gap:7px;margin-bottom:20px;cursor:pointer;color:var(--muted);font-size:13px;font-weight:500;width:fit-content;padding:6px 12px;border:1px solid var(--border);border-radius:8px;transition:all .2s;}
+.detail-back:hover{color:var(--text);border-color:var(--blue);}
+
+/* MONTHLY CHART */
+.monthly-chart-wrap{padding:10px 0;}
+.chart-svg{overflow:visible;}
+
+/* HOSTEL */
+.hostel-meal{background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:10px;}
+.hostel-meal-name{font-weight:600;font-size:13.5px;margin-bottom:8px;}
+.macro-chip{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:3px 10px;font-size:11px;font-weight:500;}
+
+/* NUTRITION SCAN RESULT */
+.scan-nutrient-table{width:100%;border-collapse:collapse;margin-top:8px;}
+.scan-nutrient-table th{font-size:10px;text-transform:uppercase;letter-spacing:.7px;color:var(--muted);padding:7px 10px;border-bottom:2px solid var(--border);text-align:left;font-weight:600;}
+.scan-nutrient-table td{padding:9px 10px;font-size:12.5px;border-bottom:1px solid var(--border);color:var(--text2);}
+.scan-nutrient-table tr:last-child td{border-bottom:none;font-weight:700;color:var(--text);background:var(--bg);}
+
+/* FULL CONTENT */
+.full-content{padding-bottom:60px;}
+
+/* PROFILE */
+.profile-body-card{text-align:center;padding:24px 16px;}
+.body-gen-toggle{display:flex;background:var(--bg);border:1px solid var(--border2);border-radius:8px;overflow:hidden;width:fit-content;margin:0 auto 16px;}
+.gen-btn{padding:6px 16px;border:none;background:transparent;font-size:11.5px;font-weight:600;color:var(--muted);cursor:pointer;transition:all .2s;font-family:var(--font-body);}
+.gen-btn.active{background:var(--blue);color:#fff;}
+
+/* MONTHLY SCORE */
+.month-bar{display:flex;flex-direction:column;align-items:center;gap:3px;flex:1;}
+.month-bar .mb-fill{width:28px;border-radius:5px 5px 0 0;transition:height .9s ease;cursor:pointer;}
+.month-bar .mb-fill:hover{opacity:.8;}
+.month-bar .mb-lbl{font-size:10px;color:var(--muted);}
+.month-bar .mb-val{font-size:11px;font-weight:600;color:var(--text2);}
+
+/* QA TILE */
+.qa-tile{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:20px;cursor:pointer;transition:all .2s;box-shadow:var(--shadow);}
+.qa-tile:hover{border-color:var(--blue);transform:translateY(-2px);box-shadow:var(--shadow-lg);}
+
+/* PREDICTION */
+.future-metric{background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:12px 14px;display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+.fm-label{font-size:12.5px;font-weight:500;}
+.fm-vals{font-size:12px;color:var(--muted);}
+
+@media(max-width:960px){
+  .auth-wrap{grid-template-columns:1fr;}
+  .auth-left{display:none;}
+  .sidebar{width:60px;min-width:60px;}
+  .sidebar .brand-n,.sidebar .nav-item span:not(.nav-icon),.sidebar .user-info,.sidebar .logout-btn,.sb-section{display:none;}
+  .inner-page{padding:20px 16px;}
+  .g2c,.g3c,.g4c{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+
+<div id="toast"></div>
+<div class="notif" id="notif" style="background:var(--text);color:#fff;">
+  <span id="notif-icon" style="font-size:18px;">💧</span>
+  <span id="notif-text">Time to drink water!</span>
+</div>
+
+<!-- ═══════ LOGIN ═══════ -->
+<div class="page active" id="page-login">
+  <div class="auth-wrap">
+    <div class="auth-left">
+      <div class="auth-bg-grid"></div>
+      <div class="auth-glow-1"></div>
+      <div class="auth-glow-2"></div>
+
+      <!-- Auth body preview -->
+      <div class="auth-body-preview">
+        <svg width="160" height="300" viewBox="0 0 100 220">
+          <defs>
+            <linearGradient id="authBodyGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#0096FF" stop-opacity=".6"/>
+              <stop offset="100%" stop-color="#0052CC" stop-opacity=".2"/>
+            </linearGradient>
+          </defs>
+          <ellipse cx="50" cy="22" rx="16" ry="18" fill="none" stroke="#0096FF" stroke-width="1" opacity=".5"/>
+          <path d="M32 55 Q28 90 30 130 L38 130 L40 100 L50 105 L60 100 L62 130 L70 130 Q72 90 68 55 Q60 48 50 47 Q40 48 32 55Z" fill="none" stroke="#0096FF" stroke-width="1" opacity=".5"/>
+          <path d="M32 60 Q20 80 22 100" stroke="#0096FF" stroke-width="3" stroke-linecap="round" fill="none" opacity=".4"/>
+          <path d="M68 60 Q80 80 78 100" stroke="#0096FF" stroke-width="3" stroke-linecap="round" fill="none" opacity=".4"/>
+          <path d="M38 130 Q34 165 36 195" stroke="#0096FF" stroke-width="4" stroke-linecap="round" fill="none" opacity=".4"/>
+          <path d="M62 130 Q66 165 64 195" stroke="#0096FF" stroke-width="4" stroke-linecap="round" fill="none" opacity=".4"/>
+        </svg>
+      </div>
+
+      <div class="auth-brand-lg">
+        <div class="auth-logo-mark"><svg viewBox="0 0 24 24"><path d="M12 2L4 6v6c0 5.5 3.5 10.7 8 12 4.5-1.3 8-6.5 8-12V6l-8-4z"/></svg></div>
+        <div>
+          <div class="brand-name">Vital</div>
+          <div class="brand-tag">Health Intelligence OS</div>
+        </div>
+      </div>
+
+      <div class="auth-hero">
+        <h1>Your <span class="hl">health,</span><br/>understood<br/>completely.</h1>
+        <p>AI-powered preventive health intelligence. Track nutrition, predict disease risk, sync your smartwatch, and see your future health outcomes — all in one place.</p>
+      </div>
+
+      <div class="auth-stat-strip">
+        <div class="astat"><div class="n">87%</div><div class="l">AI Accuracy</div></div>
+        <div class="astat"><div class="n">14+</div><div class="l">Metrics</div></div>
+        <div class="astat"><div class="n">12</div><div class="l">Disease Models</div></div>
+        <div class="astat"><div class="n">v3.0</div><div class="l">Engine</div></div>
+      </div>
+    </div>
+
+    <div class="auth-right">
+      <div class="auth-form-wrap">
+        <div class="auth-eyebrow">Welcome back</div>
+        <div class="auth-title">Sign in to Vital</div>
+        <div class="auth-sub">Continue your health intelligence journey</div>
+        <div class="fg"><label>Email address</label><input type="email" id="l-email" placeholder="you@example.com"/></div>
+        <div class="fg"><label>Password</label><input type="password" id="l-pass" placeholder="••••••••"/></div>
+        <button class="btn-main-auth" onclick="doLogin()">Continue to Dashboard →</button>
+        <div class="auth-link">New to Vital? <a onclick="showPage('page-signup')">Create free account</a></div>
+
+        <!-- Watch brands -->
+        <div style="margin-top:28px;padding-top:20px;border-top:1px solid var(--border);">
+          <div style="font-size:11px;color:var(--muted);text-align:center;margin-bottom:12px;font-weight:600;text-transform:uppercase;letter-spacing:1px;">Connects with your watch</div>
+          <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;">
+            <span class="badge bb" style="font-size:10px;">🍎 Apple Watch</span>
+            <span class="badge bg" style="font-size:10px;">📳 Galaxy</span>
+            <span class="badge bw" style="font-size:10px;">🔵 Fitbit</span>
+            <span class="badge bv" style="font-size:10px;">🟣 Garmin</span>
+            <span class="badge bc" style="font-size:10px;">⭕ Mi Band</span>
+            <span class="badge br" style="font-size:10px;">🔴 Polar</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ SIGNUP ═══════ -->
+<div class="page" id="page-signup">
+  <div class="auth-wrap">
+    <div class="auth-left">
+      <div class="auth-bg-grid"></div>
+      <div class="auth-glow-1"></div>
+      <div class="auth-glow-2"></div>
+      <div class="auth-brand-lg">
+        <div class="auth-logo-mark"><svg viewBox="0 0 24 24"><path d="M12 2L4 6v6c0 5.5 3.5 10.7 8 12 4.5-1.3 8-6.5 8-12V6l-8-4z"/></svg></div>
+        <div><div class="brand-name">Vital</div><div class="brand-tag">Health Intelligence OS</div></div>
+      </div>
+      <div class="auth-hero">
+        <h1>Build your<br/><span class="hl">complete</span><br/>health profile.</h1>
+        <p>We collect comprehensive data to build an accurate, personalized health picture with AI-powered disease risk prediction, lifestyle forecasting, and smart watch integration.</p>
+      </div>
+      <div class="auth-stat-strip">
+        <div class="astat"><div class="n">5 min</div><div class="l">Setup</div></div>
+        <div class="astat"><div class="n">100%</div><div class="l">Private</div></div>
+        <div class="astat"><div class="n">HIPAA</div><div class="l">Compliant</div></div>
+      </div>
+    </div>
+    <div class="auth-right">
+      <div class="auth-form-wrap">
+        <div class="auth-eyebrow">Create account</div>
+        <div class="step-indicator"><div class="step-dot done" id="sd1"></div><div class="step-dot" id="sd2"></div><div class="step-dot" id="sd3"></div><div class="step-dot" id="sd4"></div></div>
+
+        <!-- Step 1 -->
+        <div class="auth-step active" id="step-1">
+          <div class="auth-title">Who are you?</div>
+          <div class="auth-sub">Step 1 of 4 — Personal information</div>
+          <div class="g2"><div class="fg"><label>First name</label><input type="text" id="s-first" placeholder="Arjun"/></div><div class="fg"><label>Last name</label><input type="text" id="s-last" placeholder="Sharma"/></div></div>
+          <div class="fg"><label>Email address</label><input type="email" id="s-email" placeholder="you@example.com"/></div>
+          <div class="fg"><label>Password (min 8 chars)</label><input type="password" id="s-pass" placeholder="Create a strong password"/></div>
+          <div class="g2"><div class="fg"><label>Date of birth</label><input type="date" id="s-dob"/></div><div class="fg"><label>Gender</label><select id="s-gender"><option value="">Select</option><option>Male</option><option>Female</option><option>Other</option></select></div></div>
+          <div class="fg"><label>Phone (for notifications)</label><input type="tel" id="s-phone" placeholder="+91 98765 43210"/></div>
+          <div class="fg"><label>Living situation</label><select id="s-living"><option>Home (family)</option><option>College Hostel</option><option>PG / Shared flat</option><option>Alone</option></select></div>
+          <button class="btn-main-auth" onclick="goStep(2)">Next — Body Measurements →</button>
+          <div class="auth-link">Have an account? <a onclick="showPage('page-login')">Sign in</a></div>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="auth-step" id="step-2">
+          <div class="auth-title">Body measurements</div>
+          <div class="auth-sub">Step 2 of 4 — Physical stats & vitals</div>
+          <div class="g2"><div class="fg"><label>Height (cm)</label><input type="number" id="s-height" placeholder="172" oninput="calcBMI()"/></div><div class="fg"><label>Weight (kg)</label><input type="number" id="s-weight" placeholder="70" oninput="calcBMI()"/></div></div>
+          <div class="bmi-preview" id="bmi-prev">
+            <div style="font-size:10px;color:var(--blue);font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:3px;">Your BMI</div>
+            <div class="bmi-val-big" id="bmi-val">—</div>
+            <div style="font-size:13px;color:var(--text2);margin-top:2px;" id="bmi-cat">Enter height & weight</div>
+          </div>
+          <div class="g2"><div class="fg"><label>Blood group</label><select id="s-blood"><option>A+</option><option>A−</option><option>B+</option><option>B−</option><option>O+</option><option>O−</option><option>AB+</option><option>AB−</option></select></div><div class="fg"><label>Wrist size (for watch)</label><select><option>Small (< 14cm)</option><option selected>Medium (14–17cm)</option><option>Large (> 17cm)</option></select></div></div>
+          <div class="g2"><div class="fg"><label>Activity level</label><select id="s-activity"><option>Sedentary (desk job)</option><option>Lightly active</option><option selected>Moderately active</option><option>Very active</option><option>Athlete</option></select></div><div class="fg"><label>Primary goal</label><select><option>Lose weight</option><option selected>Stay healthy</option><option>Build muscle</option><option>Prevent disease</option><option>Improve sleep</option></select></div></div>
+          <div class="fg"><label>Daily calorie target</label><input type="number" placeholder="Leave blank to auto-calculate"/></div>
+          <div style="display:flex;gap:8px;"><button class="btn btn-ghost" style="flex:1;" onclick="goStep(1)">← Back</button><button class="btn-main-auth" style="flex:2;margin-top:0;padding:13px;" onclick="goStep(3)">Next — Health History →</button></div>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="auth-step" id="step-3">
+          <div class="auth-title">Health history</div>
+          <div class="auth-sub">Step 3 of 4 — Used for AI disease risk modelling</div>
+          <div class="fg"><label>Existing conditions</label><input type="text" placeholder="e.g. None, Asthma, Type 1 Diabetes"/></div>
+          <div class="fg"><label>Current medications</label><input type="text" placeholder="e.g. None, Metformin 500mg"/></div>
+          <div class="fg"><label>Family disease history</label><textarea rows="2" placeholder="e.g. Father: hypertension, heart disease. Mother: Type 2 diabetes."></textarea></div>
+          <div class="fg"><label>Previous surgeries / hospitalizations</label><input type="text" placeholder="e.g. None, Appendix removal 2019"/></div>
+          <div class="g2"><div class="fg"><label>Smoking status</label><select><option>Non-smoker</option><option>Ex-smoker</option><option>Occasional</option><option>Daily smoker</option></select></div><div class="fg"><label>Alcohol intake</label><select><option>None</option><option>Occasional</option><option>Weekly</option><option>Daily</option></select></div></div>
+          <div class="fg"><label>Allergies</label><input type="text" placeholder="e.g. None, Penicillin, Peanuts"/></div>
+          <div style="display:flex;gap:8px;"><button class="btn btn-ghost" style="flex:1;" onclick="goStep(2)">← Back</button><button class="btn-main-auth" style="flex:2;margin-top:0;padding:13px;" onclick="goStep(4)">Next — Lifestyle →</button></div>
+        </div>
+
+        <!-- Step 4 -->
+        <div class="auth-step" id="step-4">
+          <div class="auth-title">Lifestyle & preferences</div>
+          <div class="auth-sub">Step 4 of 4 — Personalizes your experience</div>
+          <div class="fg"><label>Diet type</label><select><option>Omnivore</option><option>Vegetarian</option><option>Vegan</option><option>Eggetarian</option><option>Keto</option><option>Intermittent fasting</option></select></div>
+          <div class="fg"><label>Food allergies / preferences</label><input type="text" placeholder="e.g. No shellfish, lactose intolerant"/></div>
+          <div class="fg"><label>Sleep schedule</label><select><option>Early bird (9pm–5am)</option><option selected>Normal (11pm–7am)</option><option>Night owl (1am–9am)</option><option>Irregular</option></select></div>
+          <div class="fg"><label>Occupation / student type</label><select><option>Engineering student</option><option>Medical student</option><option>Office professional</option><option>Other student</option><option>Other professional</option></select></div>
+          <div class="fg"><label>Smart watch brand</label><select id="s-watch"><option>None</option><option>Apple Watch</option><option>Samsung Galaxy Watch</option><option>Fitbit</option><option>Garmin</option><option>Mi Band / Redmi Watch</option><option>Noise / Boat</option><option>Polar</option><option>Other</option></select></div>
+          <div class="fg"><label>Notification preference</label><select><option selected>All (water, sleep, log reminders)</option><option>Health alerts only</option><option>Minimal</option></select></div>
+          <div style="display:flex;gap:8px;"><button class="btn btn-ghost" style="flex:1;" onclick="goStep(3)">← Back</button><button class="btn-main-auth" style="flex:2;margin-top:0;padding:13px;" onclick="doSignup()">Create My Profile ✓</button></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ APP ═══════ -->
+<div class="page" id="page-app">
+  <div class="app-shell">
+
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+      <div class="sb-bg-grid"></div>
+      <div class="sb-top">
+        <div class="sb-brand">
+          <div class="sb-mark"><svg viewBox="0 0 24 24"><path d="M12 2L4 6v6c0 5.5 3.5 10.7 8 12 4.5-1.3 8-6.5 8-12V6l-8-4z"/></svg></div>
+          <span class="brand-n">Vital</span>
+        </div>
+
+        <div class="sb-section">Core</div>
+        <nav class="sb-nav">
+          <div class="nav-item active" onclick="showIP('dash')"><span class="nav-icon">⬡</span><span>Dashboard</span></div>
+          <div class="nav-item" onclick="showIP('log')"><span class="nav-icon">◇</span><span>Daily Log</span><span class="nav-badge">!</span></div>
+          <div class="nav-item" onclick="showIP('water')"><span class="nav-icon">◈</span><span>Hydration</span></div>
+          <div class="nav-item" onclick="showIP('ai')"><span class="nav-icon">⬤</span><span>AI Nutritionist</span></div>
+          <div class="nav-item" onclick="showIP('scanner')"><span class="nav-icon">▦</span><span>Scan Snack</span></div>
+        </nav>
+
+        <div class="sb-section">Analytics</div>
+        <nav class="sb-nav">
+          <div class="nav-item" onclick="showIP('analysis')"><span class="nav-icon">◎</span><span>Analysis</span></div>
+          <div class="nav-item" onclick="showIP('monthly')"><span class="nav-icon">◑</span><span>Monthly Scores</span></div>
+          <div class="nav-item" onclick="showIP('sleep')"><span class="nav-icon">◔</span><span>Sleep Debt</span></div>
+          <div class="nav-item" onclick="showIP('diseases')"><span class="nav-icon">◬</span><span>Disease Risk</span></div>
+        </nav>
+
+        <div class="sb-section">Lifestyle</div>
+        <nav class="sb-nav">
+          <div class="nav-item" onclick="showIP('body')"><span class="nav-icon">◻</span><span>Body Model</span></div>
+          <div class="nav-item" onclick="showIP('hostel')"><span class="nav-icon">⌂</span><span>Hostel Mode</span></div>
+          <div class="nav-item" onclick="showIP('lifestyle')"><span class="nav-icon">◉</span><span>Life Prediction</span></div>
+          <div class="nav-item" onclick="showIP('watch')"><span class="nav-icon">⌚</span><span>Smart Watch</span></div>
+        </nav>
+
+        <div class="sb-section">Account</div>
+        <nav class="sb-nav">
+          <div class="nav-item" onclick="showIP('profile')"><span class="nav-icon">○</span><span>Profile</span></div>
+          <div class="nav-item" onclick="showIP('settings')"><span class="nav-icon">◌</span><span>Settings</span></div>
+        </nav>
+      </div>
+      <div class="sb-bottom">
+        <div class="user-pill"><div class="user-av" id="sb-av">A</div><div class="user-info"><div class="uname" id="sb-name">Arjun</div><div class="urole">● Premium Active</div></div></div>
+        <button class="logout-btn" onclick="doLogout()">Sign out</button>
+      </div>
+    </div>
+
+    <div class="main" id="main-scroll">
+
+      <!-- ── DASHBOARD ── -->
+      <div class="inner-page active full-content" id="ip-dash">
+        <div class="ph">
+          <div class="ph-left">
+            <h1>Good morning, <span id="dash-name">Arjun</span> 👋</h1>
+            <p id="dash-date">Loading…</p>
+          </div>
+          <div class="ph-actions">
+            <button class="btn btn-ghost btn-sm" onclick="testNotif()">🔔 Test Notification</button>
+            <button class="btn btn-blue btn-sm" onclick="showIP('log')">+ Log Today</button>
+          </div>
+        </div>
+
+        <!-- Score + 4 metrics -->
+        <div style="display:grid;grid-template-columns:200px 1fr;gap:14px;margin-bottom:14px;">
+          <div class="card" style="text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+            <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:14px;">Health Score</div>
+            <div class="score-ring">
+              <svg width="130" height="130" viewBox="0 0 130 130">
+                <circle cx="65" cy="65" r="54" fill="none" stroke="var(--border)" stroke-width="8"/>
+                <circle cx="65" cy="65" r="54" fill="none" stroke="var(--amber-l)" stroke-width="8" stroke-linecap="round" stroke-dasharray="339" stroke-dashoffset="85" style="transition:stroke-dashoffset 1.5s ease;"/>
+              </svg>
+              <div class="score-inner"><div class="score-num" style="color:var(--amber-l)">75</div><div class="score-lbl">/ 100</div></div>
+            </div>
+            <div class="badge bw">⚠ Moderate</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:8px;">14 days tracked</div>
+          </div>
+          <div>
+            <div class="g4c" style="margin-bottom:14px;">
+              <div class="mpill" onclick="showIP('sleep')"><div class="icon">😴</div><div class="val">6.2<span style="font-size:15px;">h</span></div><div class="lbl">Sleep</div><div class="chg chg-r">↓ Need 8h</div></div>
+              <div class="mpill" onclick="showIP('ai')"><div class="icon">🍽</div><div class="val">1,840</div><div class="lbl">kcal today</div><div class="chg chg-g">✓ On track</div></div>
+              <div class="mpill" onclick="showIP('watch')"><div class="icon">🏃</div><div class="val">3,200</div><div class="lbl">Steps</div><div class="chg chg-w">↓ of 10k</div></div>
+              <div class="mpill" onclick="showIP('water')"><div class="icon">💧</div><div class="val">1.4<span style="font-size:15px;">L</span></div><div class="lbl">Water</div><div class="chg chg-r">↓ Need 2.5L</div></div>
+            </div>
+            <!-- Weekly chart -->
+            <div class="card" style="padding:16px 18px;">
+              <div style="font-size:10.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:10px;">This Week — Health Score</div>
+              <div class="cbars" style="height:75px;">
+                <div class="cbar-w"><div class="cbar-v">55</div><div class="cbar" style="height:55%;background:linear-gradient(180deg,#7BC67E,var(--teal-l));"></div><div class="cbar-l">M</div></div>
+                <div class="cbar-w"><div class="cbar-v">65</div><div class="cbar" style="height:65%;background:linear-gradient(180deg,#7BC67E,var(--teal-l));"></div><div class="cbar-l">T</div></div>
+                <div class="cbar-w"><div class="cbar-v">48</div><div class="cbar" style="height:48%;background:linear-gradient(180deg,#F9A825,var(--amber-l));"></div><div class="cbar-l">W</div></div>
+                <div class="cbar-w"><div class="cbar-v">75</div><div class="cbar" style="height:75%;background:linear-gradient(180deg,#7BC67E,var(--teal-l));border:2px solid var(--teal-l);"></div><div class="cbar-l" style="color:var(--blue);font-weight:700;">T</div></div>
+                <div class="cbar-w"><div class="cbar-v">60</div><div class="cbar" style="height:60%;background:linear-gradient(180deg,#7BC67E,var(--teal-l));"></div><div class="cbar-l">F</div></div>
+                <div class="cbar-w"><div class="cbar-v">88</div><div class="cbar" style="height:88%;background:linear-gradient(180deg,#34D399,#0D9488);"></div><div class="cbar-l">S</div></div>
+                <div class="cbar-w"><div class="cbar-v">78</div><div class="cbar" style="height:78%;background:linear-gradient(180deg,#7BC67E,var(--teal-l));"></div><div class="cbar-l">S</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Body + Macros + Sleep -->
+        <div class="g3c" style="margin-bottom:14px;">
+          <!-- 3D Body -->
+          <div class="card card-dark" style="display:flex;flex-direction:column;align-items:center;padding:18px 14px;">
+            <div style="font-size:10px;font-weight:700;color:rgba(0,150,255,.7);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px;">Body Scan · BMI 23.8</div>
+            <div class="body3d-wrap">
+              <div class="body3d-scan"><div class="scan-beam"></div></div>
+              <svg class="body3d-svg" width="130" height="220" viewBox="0 0 100 220" id="dash-body-svg">
+                <defs>
+                  <linearGradient id="techBlueGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#00C8FF" stop-opacity=".25"/>
+                    <stop offset="100%" stop-color="#0052CC" stop-opacity=".1"/>
+                  </linearGradient>
+                  <filter id="techGlow"><feGaussianBlur stdDeviation="1.5" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+                </defs>
+                <!-- Head -->
+                <ellipse cx="50" cy="22" rx="16" ry="18" fill="url(#techBlueGrad)" stroke="#00C8FF" stroke-width="1" filter="url(#techGlow)" opacity=".85"/>
+                <!-- Neck -->
+                <rect x="44" y="38" width="12" height="11" rx="3" fill="url(#techBlueGrad)" stroke="#00C8FF" stroke-width="1" opacity=".85"/>
+                <!-- Torso -->
+                <path d="M32 55 Q28 90 30 130 L38 130 L40 100 L50 105 L60 100 L62 130 L70 130 Q72 90 68 55 Q60 48 50 47 Q40 48 32 55Z" fill="url(#techBlueGrad)" stroke="#00C8FF" stroke-width="1" filter="url(#techGlow)" opacity=".85"/>
+                <!-- Arms -->
+                <path d="M32 60 Q20 80 22 105 Q24 112 28 112 Q32 112 34 105 Q36 88 38 66Z" fill="url(#techBlueGrad)" stroke="#00C8FF" stroke-width="1" opacity=".8"/>
+                <path d="M68 60 Q80 80 78 105 Q76 112 72 112 Q68 112 66 105 Q64 88 62 66Z" fill="url(#techBlueGrad)" stroke="#00C8FF" stroke-width="1" opacity=".8"/>
+                <!-- Legs -->
+                <path d="M38 130 Q34 162 36 192 Q38 198 42 198 Q46 198 48 192 Q50 170 48 130Z" fill="url(#techBlueGrad)" stroke="#00C8FF" stroke-width="1" opacity=".8"/>
+                <path d="M62 130 Q66 162 64 192 Q62 198 58 198 Q54 198 52 192 Q50 170 52 130Z" fill="url(#techBlueGrad)" stroke="#00C8FF" stroke-width="1" opacity=".8"/>
+                <!-- Heartbeat -->
+                <path d="M36 85 L40 85 L43 78 L47 92 L50 82 L53 88 L56 88 L59 82 L63 92 L66 78 L69 85 L72 85" fill="none" stroke="#00C8FF" stroke-width="1.5" opacity=".9" style="animation:glow 1.5s infinite;"/>
+                <!-- Grid lines on body -->
+                <line x1="30" y1="70" x2="70" y2="70" stroke="#0096FF" stroke-width=".4" stroke-dasharray="2,4" opacity=".3"/>
+                <line x1="30" y1="90" x2="70" y2="90" stroke="#0096FF" stroke-width=".4" stroke-dasharray="2,4" opacity=".3"/>
+                <line x1="30" y1="110" x2="70" y2="110" stroke="#0096FF" stroke-width=".4" stroke-dasharray="2,4" opacity=".3"/>
+                <!-- Corner brackets -->
+                <path d="M8 8 L8 18 M8 8 L18 8" stroke="#0096FF" stroke-width="1.5" opacity=".5"/>
+                <path d="M92 8 L92 18 M92 8 L82 8" stroke="#0096FF" stroke-width="1.5" opacity=".5"/>
+                <path d="M8 212 L8 202 M8 212 L18 212" stroke="#0096FF" stroke-width="1.5" opacity=".5"/>
+                <path d="M92 212 L92 202 M92 212 L82 212" stroke="#0096FF" stroke-width="1.5" opacity=".5"/>
+                <!-- Data points -->
+                <circle cx="50" cy="78" r="3" fill="#00C8FF" opacity=".6" style="animation:pulse 2s infinite;"/>
+                <circle cx="50" cy="110" r="2" fill="#0096FF" opacity=".5" style="animation:pulse 2.5s infinite;"/>
+              </svg>
+              <!-- HUD labels -->
+              <div class="body3d-hud" style="top:30px;left:0;">HEAD</div>
+              <div class="body3d-hud" style="top:80px;right:0;text-align:right;">CHEST</div>
+              <div class="body3d-hud" style="bottom:60px;left:0;">LEGS</div>
+            </div>
+            <div class="badge bb" style="font-size:10px;margin-top:4px;">● Normal BMI 23.8</div>
+            <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;justify-content:center;">
+              <span style="font-size:9px;color:rgba(0,150,255,.7);font-family:var(--font-mono);">FAT: 18.2%</span>
+              <span style="font-size:9px;color:rgba(0,150,255,.7);font-family:var(--font-mono);">MUS: 42.8%</span>
+            </div>
+            <button class="btn btn-sm" style="margin-top:10px;width:100%;background:rgba(0,150,255,.1);color:#0096FF;border:1px solid rgba(0,150,255,.2);font-size:11px;" onclick="showIP('body')">Open 3D Body →</button>
+          </div>
+
+          <!-- Macros Donut -->
+          <div class="card">
+            <div class="sh">Today's Macros</div>
+            <div style="display:flex;gap:14px;align-items:center;margin-bottom:14px;">
+              <div class="donut-wrap">
+                <svg width="120" height="120" viewBox="0 0 120 120">
+                  <circle cx="60" cy="60" r="46" fill="none" stroke="var(--amber-l)" stroke-width="13" stroke-dasharray="289" stroke-dashoffset="0" transform="rotate(-90 60 60)"/>
+                  <circle cx="60" cy="60" r="46" fill="none" stroke="var(--blue)" stroke-width="13" stroke-dasharray="105 184" stroke-dashoffset="-172" transform="rotate(-90 60 60)"/>
+                  <circle cx="60" cy="60" r="46" fill="none" stroke="var(--violet)" stroke-width="13" stroke-dasharray="86 203" stroke-dashoffset="-277" transform="rotate(-90 60 60)"/>
+                </svg>
+                <div class="donut-inner"><div style="font-family:var(--font-head);font-size:18px;font-weight:700;">1840</div><div style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;">kcal</div></div>
+              </div>
+              <div style="flex:1;display:flex;flex-direction:column;gap:6px;">
+                <div class="legend-item" style="display:flex;align-items:center;gap:8px;font-size:12px;">
+                  <div style="width:10px;height:10px;border-radius:3px;background:var(--amber-l);flex-shrink:0;"></div>
+                  <span style="color:var(--muted);">Carbs</span><strong style="margin-left:auto;">60%</strong>
+                </div>
+                <div class="legend-item" style="display:flex;align-items:center;gap:8px;font-size:12px;">
+                  <div style="width:10px;height:10px;border-radius:3px;background:var(--blue);flex-shrink:0;"></div>
+                  <span style="color:var(--muted);">Protein</span><strong style="margin-left:auto;">22%</strong>
+                </div>
+                <div class="legend-item" style="display:flex;align-items:center;gap:8px;font-size:12px;">
+                  <div style="width:10px;height:10px;border-radius:3px;background:var(--violet);flex-shrink:0;"></div>
+                  <span style="color:var(--muted);">Fat</span><strong style="margin-left:auto;">18%</strong>
+                </div>
+              </div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:7px;">
+              <div>
+                <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px;"><span>Calories</span><span style="font-weight:600;color:var(--amber-l);">1840 / 2000 kcal</span></div>
+                <div class="pbar"><div class="pfill" style="width:92%;background:linear-gradient(90deg,var(--amber-l),#F59E0B);"></div></div>
+              </div>
+              <div>
+                <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px;"><span>Protein</span><span style="font-weight:600;color:var(--blue);">65g / 90g</span></div>
+                <div class="pbar"><div class="pfill" style="width:72%;background:var(--blue);"></div></div>
+              </div>
+              <div>
+                <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px;"><span>Fat</span><span style="font-weight:600;color:var(--violet);">38g / 65g</span></div>
+                <div class="pbar"><div class="pfill" style="width:58%;background:var(--violet);"></div></div>
+              </div>
+              <div>
+                <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px;"><span>Fiber</span><span style="font-weight:600;color:var(--red-l);">8g / 25g ⚠</span></div>
+                <div class="pbar"><div class="pfill" style="width:32%;background:var(--red-l);"></div></div>
+              </div>
+              <div>
+                <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px;"><span>Water</span><span style="font-weight:600;color:var(--cyan);">1.4L / 2.5L</span></div>
+                <div class="pbar"><div class="pfill" style="width:56%;background:var(--cyan);"></div></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Sleep Debt -->
+          <div class="card">
+            <div class="sh">Sleep This Week</div>
+            <div style="text-align:center;margin-bottom:14px;">
+              <div style="position:relative;width:100px;height:100px;margin:0 auto;">
+                <svg width="100" height="100" viewBox="0 0 100 100">
+                  <circle cx="50" cy="50" r="40" fill="none" stroke="var(--border)" stroke-width="7"/>
+                  <circle cx="50" cy="50" r="40" fill="none" stroke="var(--red-l)" stroke-width="7" stroke-linecap="round" stroke-dasharray="251" stroke-dashoffset="163" transform="rotate(-90 50 50)"/>
+                </svg>
+                <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+                  <div style="font-family:var(--font-head);font-size:22px;font-weight:700;color:var(--red-l);">12.6h</div>
+                  <div style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;">deficit</div>
+                </div>
+              </div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;font-size:11px;text-align:center;margin-bottom:12px;">
+              <div style="background:var(--red-bg);border-radius:8px;padding:9px;"><div style="font-family:var(--font-head);font-size:18px;color:var(--red);">6.2h</div><div style="color:var(--muted);margin-top:1px;">avg/night</div></div>
+              <div style="background:var(--teal-bg);border-radius:8px;padding:9px;"><div style="font-family:var(--font-head);font-size:18px;color:var(--teal);">8.0h</div><div style="color:var(--muted);margin-top:1px;">goal</div></div>
+            </div>
+            <button class="btn btn-ghost btn-sm" style="width:100%;font-size:12px;" onclick="showIP('sleep')">Full sleep analysis →</button>
+          </div>
+        </div>
+
+        <!-- AI Recommendations -->
+        <div class="card">
+          <div class="sh">🤖 AI Health Recommendations</div>
+          <div class="g3c">
+            <div style="background:linear-gradient(135deg,var(--teal-bg),#E0F9EC);border:1px solid rgba(2,122,72,.12);border-radius:12px;padding:16px;">
+              <div style="font-size:18px;margin-bottom:7px;">💤</div>
+              <div style="font-size:13px;font-weight:700;margin-bottom:4px;color:var(--teal);">Sleep First</div>
+              <div style="font-size:12px;color:var(--text2);line-height:1.65;">Sleep deprivation is your #1 risk. Aim for 8h. Reduces CFS & CVD risk by 40%.</div>
+            </div>
+            <div style="background:linear-gradient(135deg,var(--blue-bg),#DDEEFF);border:1px solid rgba(0,82,204,.12);border-radius:12px;padding:16px;">
+              <div style="font-size:18px;margin-bottom:7px;">🥦</div>
+              <div style="font-size:13px;font-weight:700;margin-bottom:4px;color:var(--blue);">Add Fiber</div>
+              <div style="font-size:12px;color:var(--text2);line-height:1.65;">Only 8g fiber today. Add 3 vegetable servings to reach 25g and reduce GI risk.</div>
+            </div>
+            <div style="background:linear-gradient(135deg,var(--amber-bg),#FFF3D0);border:1px solid rgba(181,71,8,.12);border-radius:12px;padding:16px;">
+              <div style="font-size:18px;margin-bottom:7px;">🚶</div>
+              <div style="font-size:13px;font-weight:700;margin-bottom:4px;color:var(--amber);">Walk More</div>
+              <div style="font-size:12px;color:var(--text2);line-height:1.65;">8,000 steps/day cuts cardiovascular risk by 18%. Currently at 3,200 avg.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── DAILY LOG ── -->
+      <div class="inner-page full-content" id="ip-log">
+        <div class="ph"><div class="ph-left"><h1>Daily Log</h1><p>Track food, sleep, exercise & mood for AI-powered insights</p></div></div>
+        <div class="g2c">
+          <div class="card">
+            <div class="sh">🍽 Nutrition</div>
+            <div class="fg"><label>Breakfast</label><input type="text" placeholder="e.g. Oats, banana, 2 boiled eggs"/></div>
+            <div class="fg"><label>Lunch</label><input type="text" placeholder="e.g. Rice, dal, sabzi, salad"/></div>
+            <div class="fg"><label>Dinner</label><input type="text" placeholder="e.g. Chapati, paneer curry"/></div>
+            <div class="fg"><label>Snacks</label><input type="text" placeholder="e.g. Fruits, nuts, tea"/></div>
+            <div class="g2"><div class="fg"><label>Water (L)</label><input type="number" step="0.1" placeholder="2.5"/></div><div class="fg"><label>Calories (approx)</label><input type="number" placeholder="2000"/></div></div>
+            <div class="sep">
+              <div class="sh">😴 Sleep</div>
+              <div class="g2"><div class="fg"><label>Bedtime</label><input type="time" value="22:30"/></div><div class="fg"><label>Wake time</label><input type="time" value="06:30"/></div></div>
+              <div class="fg"><label>Sleep quality</label><select><option>Excellent</option><option>Good</option><option selected>Fair</option><option>Poor</option></select></div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="sh">🏃 Exercise & Mind</div>
+            <div class="fg"><label>Activity</label><select><option>Walking / Jogging</option><option>Gym / Weight Training</option><option>Yoga</option><option>Cycling</option><option>Sports</option><option>Rest day</option></select></div>
+            <div class="g2"><div class="fg"><label>Duration (min)</label><input type="number" placeholder="45"/></div><div class="fg"><label>Steps</label><input type="number" placeholder="6500"/></div></div>
+            <div class="fg"><label>Intensity</label><select><option>Low</option><option selected>Moderate</option><option>High</option></select></div>
+            <div class="sep">
+              <div class="sh">🧠 Mental Wellbeing</div>
+              <div class="fg"><label>Stress level (1–10)</label><input type="range" min="1" max="10" value="5" id="stress-range" oninput="document.getElementById('stress-val').textContent=this.value"/></div>
+              <div style="font-size:12px;color:var(--muted);margin-top:-8px;margin-bottom:10px;">Current: <span id="stress-val">5</span>/10</div>
+              <div class="fg"><label>Mood</label><select><option>😄 Great</option><option selected>🙂 Good</option><option>😐 Neutral</option><option>😔 Low</option><option>😰 Anxious</option></select></div>
+              <div class="fg"><label>Symptoms today</label><textarea placeholder="Headache, fatigue, joint pain…" rows="3"></textarea></div>
+            </div>
+            <div style="display:flex;gap:10px;margin-top:6px;">
+              <button class="btn btn-dark" style="flex:1;" onclick="saveLog()">Save & Analyze</button>
+              <button class="btn btn-ghost" onclick="showToast('Getting AI insights…')">AI Insights</button>
+            </div>
+          </div>
+        </div>
+        <div id="log-saved" style="display:none;margin-top:14px;" class="card">
+          <div style="display:flex;align-items:center;gap:12px;">
+            <div style="font-size:26px;">✅</div>
+            <div><div style="font-weight:700;">Log saved!</div><div style="font-size:12px;color:var(--muted);margin-top:2px;">AI is updating your disease risk scores and health predictions…</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── HYDRATION ── -->
+      <div class="inner-page full-content" id="ip-water">
+        <div class="ph"><div class="ph-left"><h1>Hydration Tracker</h1><p>Log water intake — smart notifications every 90 minutes</p></div></div>
+        <div class="g3c">
+          <div class="card" style="grid-column:span 2;">
+            <div class="sh">Today's Water Log</div>
+            <div style="display:flex;gap:20px;align-items:center;margin-bottom:18px;">
+              <div style="text-align:center;flex-shrink:0;">
+                <svg width="75" height="150" viewBox="0 0 80 160">
+                  <defs><clipPath id="bclip"><path d="M20 30 Q15 40 15 50 L15 140 Q15 150 25 150 L55 150 Q65 150 65 140 L65 50 Q65 40 60 30 Z"/></clipPath></defs>
+                  <path d="M30 10 L50 10 L55 25 Q65 35 65 50 L65 140 Q65 155 50 155 L30 155 Q15 155 15 140 L15 50 Q15 35 25 25 Z" fill="var(--blue-bg)" stroke="var(--blue)" stroke-width="2"/>
+                  <rect x="15" y="87" width="50" height="68" fill="var(--blue)" opacity=".25" clip-path="url(#bclip)"/>
+                  <line x1="15" y1="87" x2="65" y2="87" stroke="var(--blue)" stroke-width="1.5" stroke-dasharray="3 3"/>
+                  <text x="40" y="120" text-anchor="middle" font-size="11" fill="var(--blue)" font-weight="700">1.4L</text>
+                  <text x="40" y="133" text-anchor="middle" font-size="9" fill="var(--muted)">of 2.5L</text>
+                </svg>
+                <div style="font-family:var(--font-head);font-size:26px;color:var(--blue);" id="water-pct">56%</div>
+                <div style="font-size:11px;color:var(--muted);">daily goal</div>
+              </div>
+              <div style="flex:1;">
+                <div style="margin-bottom:12px;">
+                  <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px;"><span style="font-weight:500;">Daily Goal</span><span style="color:var(--blue);font-weight:600;" id="water-total-display">1.4L / 2.5L</span></div>
+                  <div class="pbar" style="height:8px;"><div class="pfill" style="width:56%;background:linear-gradient(90deg,var(--blue),var(--cyan));" id="water-bar"></div></div>
+                </div>
+                <div id="water-log" style="display:flex;flex-direction:column;gap:6px;max-height:200px;overflow-y:auto;">
+                  <div class="water-entry"><span class="wtime">8:00 AM</span><span class="wamt">300 ml</span></div>
+                  <div class="water-entry"><span class="wtime">10:30 AM</span><span class="wamt">250 ml</span></div>
+                  <div class="water-entry"><span class="wtime">12:00 PM</span><span class="wamt">400 ml</span></div>
+                  <div class="water-entry"><span class="wtime">2:15 PM</span><span class="wamt">250 ml</span></div>
+                  <div class="water-entry"><span class="wtime">4:30 PM</span><span class="wamt">200 ml</span></div>
+                </div>
+                <div style="display:flex;gap:8px;align-items:center;margin-top:10px;flex-wrap:wrap;">
+                  <input type="number" id="water-amount" placeholder="ml" style="width:80px;padding:8px 10px;border:1.5px solid var(--border2);border-radius:8px;font-size:13px;outline:none;background:var(--bg);" value="250"/>
+                  <button class="btn btn-blue btn-sm" onclick="logWater()">+ Log water</button>
+                  <button class="btn btn-ghost btn-sm" onclick="quickWater(150)">150ml</button>
+                  <button class="btn btn-ghost btn-sm" onclick="quickWater(250)">250ml</button>
+                  <button class="btn btn-ghost btn-sm" onclick="quickWater(500)">500ml</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="sh">Notifications</div>
+            <div class="t-row"><div><div class="t-lbl">Water reminders</div><div class="t-desc">Every 90 min, 8AM–10PM</div></div><label class="toggle"><input type="checkbox" checked id="water-notif-toggle"/><span class="tslider"></span></label></div>
+            <div class="t-row"><div><div class="t-lbl">Sleep reminder</div><div class="t-desc">Daily at 10:30 PM</div></div><label class="toggle"><input type="checkbox" checked/><span class="tslider"></span></label></div>
+            <div class="t-row"><div><div class="t-lbl">Morning hydration</div><div class="t-desc">Drink on wake up</div></div><label class="toggle"><input type="checkbox" checked/><span class="tslider"></span></label></div>
+            <div style="background:var(--blue-bg);border-radius:9px;padding:11px;font-size:12px;color:var(--blue);margin-top:12px;">
+              <strong>Next reminder:</strong> 6:00 PM<br/><span style="opacity:.7;">250ml every 90 min keeps hydration optimal</span>
+            </div>
+            <button class="btn btn-ghost btn-sm" style="margin-top:10px;width:100%;" onclick="triggerNotif('💧','Hydration reminder! Drink 250ml now 💧','#1A5C8A')">Test Notification</button>
+          </div>
+        </div>
+        <div class="card" style="margin-top:14px;">
+          <div class="sh">Weekly Hydration</div>
+          <div class="cbars" style="height:90px;">
+            <div class="cbar-w"><div class="cbar-v" style="color:var(--amber);">1.2L</div><div class="cbar" style="height:48%;background:linear-gradient(180deg,#74C0FC,var(--blue));"></div><div class="cbar-l">Mon</div></div>
+            <div class="cbar-w"><div class="cbar-v" style="color:var(--amber);">1.5L</div><div class="cbar" style="height:60%;background:linear-gradient(180deg,#74C0FC,var(--blue));"></div><div class="cbar-l">Tue</div></div>
+            <div class="cbar-w"><div class="cbar-v" style="color:var(--teal-l);">2.2L</div><div class="cbar" style="height:88%;background:linear-gradient(180deg,var(--cyan),var(--teal-l));"></div><div class="cbar-l">Wed</div></div>
+            <div class="cbar-w"><div class="cbar-v" style="color:var(--amber);">1.4L</div><div class="cbar" style="height:56%;background:linear-gradient(180deg,#74C0FC,var(--blue));border:2px solid var(--blue);"></div><div class="cbar-l" style="color:var(--blue);font-weight:700;">Thu</div></div>
+            <div class="cbar-w"><div class="cbar-v" style="color:var(--red-l);">0.9L</div><div class="cbar" style="height:36%;background:linear-gradient(180deg,#FCA5A5,var(--red-l));"></div><div class="cbar-l">Fri</div></div>
+            <div class="cbar-w"><div class="cbar-v" style="color:var(--teal-l);">2.8L</div><div class="cbar" style="height:100%;background:linear-gradient(180deg,var(--cyan),var(--teal-l));"></div><div class="cbar-l">Sat</div></div>
+            <div class="cbar-w"><div class="cbar-v" style="color:var(--amber);">1.8L</div><div class="cbar" style="height:72%;background:linear-gradient(180deg,#74C0FC,var(--blue));"></div><div class="cbar-l">Sun</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── AI NUTRITIONIST ── -->
+      <div class="inner-page full-content" id="ip-ai" style="height:100vh;padding:28px 32px;">
+        <div class="ph"><div class="ph-left"><h1>AI Nutritionist</h1><p>Upload a meal photo for instant calorie, fat, protein & fiber analysis</p></div></div>
+        <div class="card" style="height:calc(100vh - 170px);display:flex;flex-direction:column;">
+          <div class="chat-messages" id="chat-msgs">
+            <div class="msg ai"><div class="msg-av ai">V</div><div class="msg-bubble">Hi! I'm your AI Nutritionist.<br/>• <strong>Upload a meal photo</strong> — I'll give exact kcal, fat, protein & fiber breakdown<br/>• Ask anything about nutrition, meal planning, or supplements<br/>• All analyzed nutrients are <strong>auto-logged</strong> to your daily tracker 🍽️<br/><br/>Today's targets: <strong>2000 kcal · 90g protein · 65g fat · 25g fiber · 2.5L water</strong></div></div>
+          </div>
+          <div class="chat-input-area">
+            <div class="upload-row">
+              <button class="upload-btn" onclick="document.getElementById('food-file-input').click()">📷 Upload meal photo</button>
+              <input type="file" id="food-file-input" accept="image/*" onchange="previewFood(event)" style="display:none;"/>
+              <div class="upload-preview" id="upload-preview"><img id="preview-img" src="" alt="meal"/><button class="upload-remove" onclick="removePreview()">×</button></div>
+              <span id="upload-hint" style="font-size:12px;color:var(--teal-l);display:none;font-weight:600;">📊 Nutrients will be auto-logged after analysis</span>
+            </div>
+            <div class="chat-input-row">
+              <textarea id="chat-input" rows="2" placeholder="Ask about your meal, macros, meal plan, supplements…" onkeydown="chatKey(event)"></textarea>
+              <button class="chat-send" onclick="sendChat()">Send →</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── SNACK SCANNER ── -->
+      <div class="inner-page full-content" id="ip-scanner">
+        <div class="ph"><div class="ph-left"><h1>Snack Scanner</h1><p>Upload a snack packet — AI reads ingredients and gives full nutritional verdict</p></div></div>
+        <div class="g2c">
+          <div class="card">
+            <div class="sh">📦 Scan a Packet</div>
+            <div style="border:2px dashed var(--border2);border-radius:14px;padding:36px 20px;text-align:center;cursor:pointer;transition:all .2s;margin-bottom:14px;" id="scan-drop" onclick="document.getElementById('scan-file').click()" ondragover="event.preventDefault();this.style.borderColor='var(--amber-l)'" ondragleave="this.style.borderColor='var(--border2)'" ondrop="handleScanDrop(event)">
+              <div style="font-size:44px;margin-bottom:10px;">📷</div>
+              <div style="font-weight:700;font-size:14px;">Click or drag & drop</div>
+              <div style="font-size:12px;color:var(--muted);margin-top:3px;">Snack packet front / back / ingredients list</div>
+              <div style="font-size:11px;color:var(--blue);margin-top:8px;font-weight:600;">Gets: Calories · Fat · Protein · Fiber · Health Verdict</div>
+            </div>
+            <input type="file" id="scan-file" accept="image/*" style="display:none;" onchange="scanPacket(event)"/>
+            <div id="scan-preview-wrap" style="display:none;margin-bottom:14px;">
+              <img id="scan-preview-img" style="width:100%;border-radius:12px;max-height:200px;object-fit:contain;background:var(--bg);border:1px solid var(--border);" src="" alt=""/>
+            </div>
+            <div id="scan-result" style="display:none;"></div>
+          </div>
+
+          <div class="card">
+            <div class="sh">Recent Scans</div>
+            <div style="display:flex;flex-direction:column;gap:10px;" id="scan-history">
+              <div style="background:var(--red-bg);border:1px solid rgba(180,35,24,.12);border-radius:12px;padding:14px;">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;"><div style="font-weight:600;font-size:13.5px;">Lays Classic Chips</div><span class="badge br">🚫 Avoid</span></div>
+                <div class="scan-nutrient-table" style="font-size:11.5px;">
+                  <table width="100%"><tr><td style="color:var(--muted);">Per 30g serving:</td><td style="font-weight:600;">153 kcal</td><td style="color:#e07;">Fat: 9.8g</td><td style="color:var(--blue);">Protein: 2g</td><td style="color:var(--teal);">Fiber: 1g</td></tr></table>
+                </div>
+                <div style="font-size:11.5px;color:var(--muted);margin-top:6px;">High sodium 730mg, trans fats, artificial flavors. Not recommended.</div>
+              </div>
+              <div style="background:var(--amber-bg);border:1px solid rgba(181,71,8,.12);border-radius:12px;padding:14px;">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;"><div style="font-weight:600;font-size:13.5px;">Britannia Marie Gold</div><span class="badge bw">⚡ Average</span></div>
+                <div style="font-size:11.5px;margin-bottom:5px;"><span style="margin-right:10px;"><strong>Per biscuit:</strong></span><span style="color:var(--amber);">28 kcal</span> · <span style="color:#e07;">Fat: 0.9g</span> · <span style="color:var(--blue);">Protein: 0.5g</span> · <span style="color:var(--teal);">Fiber: 0.1g</span></div>
+                <div style="font-size:11.5px;color:var(--muted);">Moderate sugar, refined flour. Occasional is fine.</div>
+              </div>
+              <div style="background:var(--teal-bg);border:1px solid rgba(2,122,72,.12);border-radius:12px;padding:14px;">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;"><div style="font-weight:600;font-size:13.5px;">Makhana (Fox Nuts) 30g</div><span class="badge bg">✓ Healthy</span></div>
+                <div style="font-size:11.5px;margin-bottom:5px;"><strong>Per 30g:</strong> <span style="color:var(--amber);">108 kcal</span> · <span style="color:#e07;">Fat: 0.4g</span> · <span style="color:var(--blue);">Protein: 4g</span> · <span style="color:var(--teal);">Fiber: 0.5g</span></div>
+                <div style="font-size:11.5px;color:var(--muted);">High protein, low fat, low glycemic. Excellent choice.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── ANALYSIS ── -->
+      <div class="inner-page full-content" id="ip-analysis">
+        <div class="ph"><div class="ph-left"><h1>Health Analysis</h1><p>Deep dive into every dimension of your health</p></div></div>
+        <div class="g2c" style="margin-bottom:14px;">
+          <div class="qa-tile" onclick="showDetail('bmi')"><div style="font-size:24px;margin-bottom:8px;">⚖️</div><div style="font-size:14px;font-weight:700;margin-bottom:2px;">BMI Analysis</div><div style="font-size:12px;color:var(--muted);">Body mass index, ideal weight & composition</div><div class="pbar" style="margin-top:10px;"><div class="pfill" style="width:60%;background:var(--teal-l);"></div></div><div style="font-size:12px;color:var(--blue);font-weight:600;margin-top:8px;">Open →</div></div>
+          <div class="qa-tile" onclick="showDetail('diet')"><div style="font-size:24px;margin-bottom:8px;">🥗</div><div style="font-size:14px;font-weight:700;margin-bottom:2px;">Diet Planning</div><div style="font-size:12px;color:var(--muted);">Macros, meal plan & nutritional gaps</div><div class="pbar" style="margin-top:10px;"><div class="pfill" style="width:55%;background:var(--amber-l);"></div></div><div style="font-size:12px;color:var(--blue);font-weight:600;margin-top:8px;">Open →</div></div>
+          <div class="qa-tile" onclick="showDetail('exercise')"><div style="font-size:24px;margin-bottom:8px;">🏋️</div><div style="font-size:14px;font-weight:700;margin-bottom:2px;">Exercise Risk</div><div style="font-size:12px;color:var(--muted);">Activity levels, cardio & strength</div><div class="pbar" style="margin-top:10px;"><div class="pfill" style="width:35%;background:var(--red-l);"></div></div><div style="font-size:12px;color:var(--blue);font-weight:600;margin-top:8px;">Open →</div></div>
+          <div class="qa-tile" onclick="showIP('sleep')"><div style="font-size:24px;margin-bottom:8px;">😴</div><div style="font-size:14px;font-weight:700;margin-bottom:2px;">Sleep Debt</div><div style="font-size:12px;color:var(--muted);">Weekly sleep analysis & deficit tracker</div><div class="pbar" style="margin-top:10px;"><div class="pfill" style="width:45%;background:var(--violet);"></div></div><div style="font-size:12px;color:var(--blue);font-weight:600;margin-top:8px;">Open →</div></div>
+        </div>
+        <div class="g4c">
+          <div class="mpill"><div class="icon">📊</div><div class="val" style="font-size:22px;">78/100</div><div class="lbl">Body comp</div></div>
+          <div class="mpill"><div class="icon">🔥</div><div class="val" style="font-size:22px;">1,840</div><div class="lbl">kcal avg/day</div></div>
+          <div class="mpill"><div class="icon">🧘</div><div class="val" style="font-size:22px;">5.8</div><div class="lbl">Avg stress</div></div>
+          <div class="mpill"><div class="icon">💊</div><div class="val" style="font-size:22px;">None</div><div class="lbl">Medications</div></div>
+        </div>
+      </div>
+
+      <!-- ── MONTHLY SCORES ── -->
+      <div class="inner-page full-content" id="ip-monthly">
+        <div class="ph"><div class="ph-left"><h1>Monthly Health Scores</h1><p>Track your health progress across 12 months with category breakdown</p></div></div>
+
+        <!-- Big Monthly Bar Chart -->
+        <div class="card" style="margin-bottom:14px;">
+          <div class="sh">12-Month Health Score Trend</div>
+          <div style="display:flex;align-items:flex-end;gap:10px;height:160px;padding:0 4px;margin-bottom:8px;" id="monthly-bars">
+            <!-- Generated by JS -->
+          </div>
+          <div style="display:flex;align-items:center;gap:16px;font-size:11.5px;color:var(--muted);padding:0 4px;border-top:1px solid var(--border);padding-top:10px;margin-top:4px;">
+            <span>Best: <strong style="color:var(--teal-l);">May 91/100</strong></span>
+            <span>Worst: <strong style="color:var(--red-l);">Dec 48/100</strong></span>
+            <span>Current: <strong style="color:var(--amber-l);">Feb 75/100</strong></span>
+            <span style="margin-left:auto;">Annual avg: <strong>71/100</strong></span>
+          </div>
+        </div>
+
+        <!-- Monthly breakdown by category -->
+        <div class="g2c" style="margin-bottom:14px;">
+          <div class="card">
+            <div class="sh">Score by Category — February</div>
+            <div style="display:flex;flex-direction:column;gap:10px;">
+              <div>
+                <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px;"><span>😴 Sleep</span><span style="font-weight:700;color:var(--red-l);">58/100</span></div>
+                <div class="pbar" style="height:7px;"><div class="pfill" style="width:58%;background:var(--red-l);"></div></div>
+              </div>
+              <div>
+                <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px;"><span>🍽 Nutrition</span><span style="font-weight:700;color:var(--amber-l);">72/100</span></div>
+                <div class="pbar" style="height:7px;"><div class="pfill" style="width:72%;background:var(--amber-l);"></div></div>
+              </div>
+              <div>
+                <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px;"><span>🏃 Activity</span><span style="font-weight:700;color:var(--amber-l);">65/100</span></div>
+                <div class="pbar" style="height:7px;"><div class="pfill" style="width:65%;background:var(--amber-l);"></div></div>
+              </div>
+              <div>
+                <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px;"><span>💧 Hydration</span><span style="font-weight:700;color:var(--amber-l);">68/100</span></div>
+                <div class="pbar" style="height:7px;"><div class="pfill" style="width:68%;background:var(--blue);"></div></div>
+              </div>
+              <div>
+                <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px;"><span>🧠 Mental</span><span style="font-weight:700;color:var(--teal-l);">82/100</span></div>
+                <div class="pbar" style="height:7px;"><div class="pfill" style="width:82%;background:var(--teal-l);"></div></div>
+              </div>
+              <div>
+                <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px;"><span>⚖️ Body</span><span style="font-weight:700;color:var(--teal-l);">78/100</span></div>
+                <div class="pbar" style="height:7px;"><div class="pfill" style="width:78%;background:var(--teal-l);"></div></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="sh">Month-over-Month Comparison</div>
+            <table class="tbl">
+              <tr><th>Month</th><th>Score</th><th>Change</th><th>Status</th></tr>
+              <tr><td>February</td><td style="font-family:var(--font-head);font-weight:700;">75</td><td style="color:var(--teal-l);">+3 ↑</td><td><span class="badge bg">Good</span></td></tr>
+              <tr><td>January</td><td style="font-family:var(--font-head);">72</td><td style="color:var(--red-l);">-4 ↓</td><td><span class="badge bw">Moderate</span></td></tr>
+              <tr><td>December</td><td style="font-family:var(--font-head);">48</td><td style="color:var(--red-l);">-23 ↓</td><td><span class="badge br">Low</span></td></tr>
+              <tr><td>November</td><td style="font-family:var(--font-head);">71</td><td style="color:var(--teal-l);">+8 ↑</td><td><span class="badge bg">Good</span></td></tr>
+              <tr><td>October</td><td style="font-family:var(--font-head);">63</td><td style="color:var(--teal-l);">+5 ↑</td><td><span class="badge bw">Moderate</span></td></tr>
+            </table>
+          </div>
+        </div>
+
+        <!-- Trend Line SVG Chart -->
+        <div class="card">
+          <div class="sh">12-Month Health Trend Lines</div>
+          <svg width="100%" height="180" viewBox="0 0 700 180" id="trend-svg" style="overflow:visible;">
+            <defs>
+              <linearGradient id="lineGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="var(--blue)"/>
+                <stop offset="100%" stop-color="var(--teal-l)"/>
+              </linearGradient>
+            </defs>
+            <!-- Grid -->
+            <line x1="0" y1="36" x2="700" y2="36" stroke="var(--border)" stroke-width="1"/>
+            <line x1="0" y1="72" x2="700" y2="72" stroke="var(--border)" stroke-width="1"/>
+            <line x1="0" y1="108" x2="700" y2="108" stroke="var(--border)" stroke-width="1"/>
+            <line x1="0" y1="144" x2="700" y2="144" stroke="var(--border)" stroke-width="1"/>
+            <!-- Y labels -->
+            <text x="-8" y="40" font-size="9" fill="var(--muted)" text-anchor="end">100</text>
+            <text x="-8" y="76" font-size="9" fill="var(--muted)" text-anchor="end">75</text>
+            <text x="-8" y="112" font-size="9" fill="var(--muted)" text-anchor="end">50</text>
+            <text x="-8" y="148" font-size="9" fill="var(--muted)" text-anchor="end">25</text>
+            <!-- Health Score line: data [62,71,78,80,91,85,73,68,63,71,72,75] -->
+            <polyline points="0,90 63,66 127,55 190,50 253,22 317,38 380,58 443,66 507,78 570,66 633,62 700,58" fill="none" stroke="url(#lineGrad)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <!-- Data points -->
+            <circle cx="0" cy="90" r="4" fill="var(--blue)"/>
+            <circle cx="63" cy="66" r="4" fill="var(--blue)"/>
+            <circle cx="127" cy="55" r="4" fill="var(--blue)"/>
+            <circle cx="190" cy="50" r="4" fill="var(--blue)"/>
+            <circle cx="253" cy="22" r="5" fill="var(--teal-l)"/>
+            <circle cx="317" cy="38" r="4" fill="var(--blue)"/>
+            <circle cx="380" cy="58" r="4" fill="var(--blue)"/>
+            <circle cx="443" cy="66" r="4" fill="var(--blue)"/>
+            <circle cx="507" cy="78" r="4" fill="var(--amber-l)"/>
+            <circle cx="570" cy="66" r="4" fill="var(--blue)"/>
+            <circle cx="633" cy="62" r="4" fill="var(--blue)"/>
+            <circle cx="700" cy="58" r="5" fill="var(--teal-l)" stroke="var(--blue)" stroke-width="2"/>
+            <!-- Month labels -->
+            <text x="0" y="170" font-size="9" fill="var(--muted)" text-anchor="middle">Mar</text>
+            <text x="63" y="170" font-size="9" fill="var(--muted)" text-anchor="middle">Apr</text>
+            <text x="127" y="170" font-size="9" fill="var(--muted)" text-anchor="middle">May</text>
+            <text x="190" y="170" font-size="9" fill="var(--muted)" text-anchor="middle">Jun</text>
+            <text x="253" y="170" font-size="9" fill="var(--muted)" text-anchor="middle">Jul</text>
+            <text x="317" y="170" font-size="9" fill="var(--muted)" text-anchor="middle">Aug</text>
+            <text x="380" y="170" font-size="9" fill="var(--muted)" text-anchor="middle">Sep</text>
+            <text x="443" y="170" font-size="9" fill="var(--muted)" text-anchor="middle">Oct</text>
+            <text x="507" y="170" font-size="9" fill="var(--muted)" text-anchor="middle">Nov</text>
+            <text x="570" y="170" font-size="9" fill="var(--muted)" text-anchor="middle">Dec</text>
+            <text x="633" y="170" font-size="9" fill="var(--muted)" text-anchor="middle">Jan</text>
+            <text x="700" y="170" font-size="9" fill="var(--blue)" text-anchor="middle" font-weight="700">Feb</text>
+          </svg>
+        </div>
+      </div>
+
+      <!-- ── SLEEP ── -->
+      <div class="inner-page full-content" id="ip-sleep">
+        <div class="ph"><div class="ph-left"><h1>Sleep Analytics</h1><p>Weekly sleep debt tracker, quality analysis & improvement plan</p></div></div>
+        <div class="g3c" style="margin-bottom:14px;">
+          <div class="mpill"><div class="icon">⏱</div><div class="val">6.2<span style="font-size:15px;">h</span></div><div class="lbl">Avg duration</div><div class="chg chg-r">↓ Need 8h</div></div>
+          <div class="mpill"><div class="icon">🛌</div><div class="val">Fair</div><div class="lbl">Quality</div><div class="chg chg-r">↓ Disturbed</div></div>
+          <div class="mpill"><div class="icon">⏰</div><div class="val">11:30</div><div class="lbl">Avg bedtime</div><div class="chg chg-w">↓ Too late</div></div>
+        </div>
+        <div class="g2c" style="margin-bottom:14px;">
+          <div class="card">
+            <div class="sh">7-Day Sleep Pattern</div>
+            <div class="cbars" style="height:120px;margin-bottom:8px;">
+              <div class="cbar-w"><div class="cbar-v" style="color:var(--amber-l);">5.5h</div><div class="cbar" style="height:55%;background:linear-gradient(180deg,#A78BFA,var(--violet));"></div><div class="cbar-l">Mon</div></div>
+              <div class="cbar-w"><div class="cbar-v" style="color:var(--teal-l);">6.4h</div><div class="cbar" style="height:64%;background:linear-gradient(180deg,#A78BFA,var(--violet));"></div><div class="cbar-l">Tue</div></div>
+              <div class="cbar-w"><div class="cbar-v" style="color:var(--red-l);">5.1h</div><div class="cbar" style="height:51%;background:linear-gradient(180deg,#FCA5A5,var(--red-l));"></div><div class="cbar-l">Wed</div></div>
+              <div class="cbar-w"><div class="cbar-v" style="color:var(--teal-l);">6.7h</div><div class="cbar" style="height:67%;background:linear-gradient(180deg,#A78BFA,var(--violet));"></div><div class="cbar-l">Thu</div></div>
+              <div class="cbar-w"><div class="cbar-v" style="color:var(--amber-l);">5.9h</div><div class="cbar" style="height:59%;background:linear-gradient(180deg,#A78BFA,var(--violet));"></div><div class="cbar-l">Fri</div></div>
+              <div class="cbar-w"><div class="cbar-v" style="color:var(--teal-l);">8.0h</div><div class="cbar" style="height:100%;background:linear-gradient(180deg,#34D399,var(--teal-l));"></div><div class="cbar-l">Sat</div></div>
+              <div class="cbar-w"><div class="cbar-v" style="color:var(--teal-l);">7.2h</div><div class="cbar" style="height:90%;background:linear-gradient(180deg,#A78BFA,var(--violet));"></div><div class="cbar-l">Sun</div></div>
+            </div>
+            <div style="background:var(--red-bg);border-radius:9px;padding:12px;font-size:12.5px;"><strong style="color:var(--red);">Sleep Deficit Alert</strong> — Averaging 1.8h less than recommended. Raises CVD, cognitive decline & metabolic risk.</div>
+          </div>
+          <div class="card">
+            <div class="sh">Sleep Debt Summary</div>
+            <div style="text-align:center;margin-bottom:14px;">
+              <div style="position:relative;width:120px;height:120px;margin:0 auto;">
+                <svg width="120" height="120" viewBox="0 0 120 120"><circle cx="60" cy="60" r="48" fill="none" stroke="var(--border)" stroke-width="8"/><circle cx="60" cy="60" r="48" fill="none" stroke="var(--red-l)" stroke-width="8" stroke-linecap="round" stroke-dasharray="301" stroke-dashoffset="195" transform="rotate(-90 60 60)"/></svg>
+                <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;"><div style="font-family:var(--font-head);font-size:26px;font-weight:700;color:var(--red-l);">12.6h</div><div style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;">this week</div></div>
+              </div>
+            </div>
+            <div class="g2" style="gap:8px;font-size:12px;text-align:center;">
+              <div style="background:var(--red-bg);border-radius:9px;padding:11px;"><div style="font-family:var(--font-head);font-size:22px;color:var(--red);">-12.6h</div><div style="color:var(--muted);">Weekly debt</div></div>
+              <div style="background:var(--violet-bg);border-radius:9px;padding:11px;"><div style="font-family:var(--font-head);font-size:22px;color:var(--violet);">+4w</div><div style="color:var(--muted);">To recover</div></div>
+            </div>
+            <div style="background:var(--violet-bg);border-radius:9px;padding:11px;margin-top:8px;font-size:12.5px;color:var(--violet);">
+              <strong>Recovery plan:</strong> Add 30 min/night. No screens 1h before bed. Consistent bedtime.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── DISEASE RISK ── -->
+      <div class="inner-page full-content" id="ip-diseases">
+        <div class="ph"><div class="ph-left"><h1>Disease Risk</h1><p>AI-powered preventive risk prediction — click any disease for full details</p></div></div>
+        <div style="display:grid;grid-template-columns:1fr 300px;gap:14px;">
+          <div class="card">
+            <div class="sh">Risk Assessment</div>
+            <div id="disease-list">
+              <div class="drow" onclick="showDiseaseDetail('cfs')"><div><div class="dname">Chronic Fatigue Syndrome</div><div class="dtrigger">Sleep deprivation · high stress</div></div><div style="display:flex;align-items:center;gap:10px;"><div class="dpct" style="color:var(--red-l);">48%</div><span class="badge br">High</span><span style="color:var(--muted);font-size:11px;">→</span></div></div>
+              <div class="drow" onclick="showDiseaseDetail('vitd')"><div><div class="dname">Vitamin D Deficiency</div><div class="dtrigger">Indoor lifestyle · low sunlight</div></div><div style="display:flex;align-items:center;gap:10px;"><div class="dpct" style="color:var(--amber-l);">42%</div><span class="badge bw">Moderate</span><span style="color:var(--muted);font-size:11px;">→</span></div></div>
+              <div class="drow" onclick="showDiseaseDetail('anxiety')"><div><div class="dname">Depression / Anxiety</div><div class="dtrigger">Sleep issues · chronic stress</div></div><div style="display:flex;align-items:center;gap:10px;"><div class="dpct" style="color:var(--amber-l);">35%</div><span class="badge bw">Moderate</span><span style="color:var(--muted);font-size:11px;">→</span></div></div>
+              <div class="drow" onclick="showDiseaseDetail('cvd')"><div><div class="dname">Cardiovascular Disease</div><div class="dtrigger">Low exercise · stress</div></div><div style="display:flex;align-items:center;gap:10px;"><div class="dpct" style="color:var(--amber-l);">34%</div><span class="badge bw">Moderate</span><span style="color:var(--muted);font-size:11px;">→</span></div></div>
+              <div class="drow" onclick="showDiseaseDetail('htn')"><div><div class="dname">Hypertension</div><div class="dtrigger">Stress · low hydration</div></div><div style="display:flex;align-items:center;gap:10px;"><div class="dpct" style="color:var(--amber-l);">31%</div><span class="badge bw">Moderate</span><span style="color:var(--muted);font-size:11px;">→</span></div></div>
+              <div class="drow" onclick="showDiseaseDetail('t2d')"><div><div class="dname">Type 2 Diabetes</div><div class="dtrigger">High carb diet · low activity</div></div><div style="display:flex;align-items:center;gap:10px;"><div class="dpct" style="color:var(--amber-l);">28%</div><span class="badge bw">Moderate</span><span style="color:var(--muted);font-size:11px;">→</span></div></div>
+              <div class="drow" onclick="showDiseaseDetail('gi')"><div><div class="dname">GI / Gut Issues</div><div class="dtrigger">Low fiber · irregular meals</div></div><div style="display:flex;align-items:center;gap:10px;"><div class="dpct" style="color:var(--teal-l);">18%</div><span class="badge bg">Low</span><span style="color:var(--muted);font-size:11px;">→</span></div></div>
+              <div class="drow" onclick="showDiseaseDetail('obesity')"><div><div class="dname">Obesity</div><div class="dtrigger">Caloric surplus · inactivity</div></div><div style="display:flex;align-items:center;gap:10px;"><div class="dpct" style="color:var(--teal-l);">12%</div><span class="badge bg">Low</span><span style="color:var(--muted);font-size:11px;">→</span></div></div>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:14px;">
+            <div class="card">
+              <div class="sh" style="margin-bottom:10px;">Risk Radar</div>
+              <div style="display:flex;flex-direction:column;gap:7px;">
+                <div><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px;"><span>CFS</span><span style="color:var(--red-l);font-weight:600;">48%</span></div><div class="pbar"><div class="pfill" style="width:48%;background:var(--red-l);"></div></div></div>
+                <div><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px;"><span>Vit D</span><span style="color:var(--amber-l);font-weight:600;">42%</span></div><div class="pbar"><div class="pfill" style="width:42%;background:var(--violet);"></div></div></div>
+                <div><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px;"><span>Anxiety</span><span style="color:var(--amber-l);font-weight:600;">35%</span></div><div class="pbar"><div class="pfill" style="width:35%;background:var(--amber-l);"></div></div></div>
+                <div><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px;"><span>CVD</span><span style="color:var(--amber-l);font-weight:600;">34%</span></div><div class="pbar"><div class="pfill" style="width:34%;background:var(--amber-l);"></div></div></div>
+                <div><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px;"><span>T2D</span><span style="color:var(--amber-l);font-weight:600;">28%</span></div><div class="pbar"><div class="pfill" style="width:28%;background:var(--amber-l);"></div></div></div>
+                <div><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px;"><span>Obesity</span><span style="color:var(--teal-l);font-weight:600;">12%</span></div><div class="pbar"><div class="pfill" style="width:12%;background:var(--teal-l);"></div></div></div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="sh" style="margin-bottom:10px;">Priority Actions</div>
+              <div style="display:flex;flex-direction:column;gap:7px;font-size:12px;color:var(--text2);">
+                <div style="background:var(--red-bg);padding:8px 11px;border-radius:8px;">① Sleep 8h — cuts CFS risk 40%</div>
+                <div style="background:var(--amber-bg);padding:8px 11px;border-radius:8px;">② 30 min sun for Vit D daily</div>
+                <div style="background:var(--blue-bg);padding:8px 11px;border-radius:8px;">③ 30 min cardio cuts CVD risk</div>
+                <div style="background:var(--violet-bg);padding:8px 11px;border-radius:8px;">④ 2.5L water for hypertension</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── BODY MODEL ── -->
+      <div class="inner-page full-content" id="ip-body">
+        <div class="ph"><div class="ph-left"><h1>3D Body Model</h1><p>Technical body scan with real-time health indicators</p></div></div>
+        <div class="g3c">
+          <div class="card card-dark" style="display:flex;flex-direction:column;align-items:center;padding:24px 16px;grid-column:span 1;">
+            <div style="font-size:10px;font-weight:700;color:rgba(0,150,255,.7);text-transform:uppercase;letter-spacing:2px;margin-bottom:4px;">VITAL · BODY SCAN v3.0</div>
+            <div style="font-size:10px;font-family:var(--font-mono);color:rgba(0,150,255,.4);margin-bottom:14px;">ID: USR-2025-0026 · LIVE</div>
+
+            <!-- Gender Toggle -->
+            <div class="body-gen-toggle" style="margin-bottom:14px;">
+              <button class="gen-btn active" id="gen-m" onclick="setBodyGender('male')">♂ Male</button>
+              <button class="gen-btn" id="gen-f" onclick="setBodyGender('female')">♀ Female</button>
+            </div>
+
+            <div class="body3d-wrap" style="padding:10px 20px;">
+              <div class="body3d-scan"><div class="scan-beam"></div></div>
+              <svg class="body3d-svg" width="160" height="260" viewBox="0 0 100 220" id="full-body-svg">
+                <defs>
+                  <linearGradient id="techBlue2" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#00E5FF" stop-opacity=".22"/>
+                    <stop offset="50%" stop-color="#0096FF" stop-opacity=".12"/>
+                    <stop offset="100%" stop-color="#0052CC" stop-opacity=".08"/>
+                  </linearGradient>
+                  <filter id="glow2"><feGaussianBlur stdDeviation="2" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+                </defs>
+                <!-- Head -->
+                <ellipse cx="50" cy="20" rx="16" ry="18" fill="url(#techBlue2)" stroke="#00D4FF" stroke-width="1.2" filter="url(#glow2)"/>
+                <!-- Neck -->
+                <rect x="44" y="36" width="12" height="10" rx="3" fill="url(#techBlue2)" stroke="#00D4FF" stroke-width="1"/>
+                <!-- Torso - male default -->
+                <path id="fb-torso" d="M30 52 Q24 88 27 132 L37 132 L39 102 L50 107 L61 102 L63 132 L73 132 Q76 88 70 52 Q62 45 50 44 Q38 45 30 52Z" fill="url(#techBlue2)" stroke="#00D4FF" stroke-width="1.2" filter="url(#glow2)"/>
+                <!-- Shoulders -->
+                <ellipse cx="25" cy="56" rx="8" ry="6" fill="url(#techBlue2)" stroke="#00D4FF" stroke-width="1" opacity=".8"/>
+                <ellipse cx="75" cy="56" rx="8" ry="6" fill="url(#techBlue2)" stroke="#00D4FF" stroke-width="1" opacity=".8"/>
+                <!-- Arms -->
+                <path d="M22 58 Q12 78 14 106 Q16 114 20 114 Q24 114 26 106 Q28 86 30 62Z" fill="url(#techBlue2)" stroke="#00D4FF" stroke-width="1" opacity=".85"/>
+                <path d="M78 58 Q88 78 86 106 Q84 114 80 114 Q76 114 74 106 Q72 86 70 62Z" fill="url(#techBlue2)" stroke="#00D4FF" stroke-width="1" opacity=".85"/>
+                <!-- Hands -->
+                <ellipse cx="17" cy="118" rx="6" ry="8" fill="url(#techBlue2)" stroke="#00D4FF" stroke-width="1" opacity=".7"/>
+                <ellipse cx="83" cy="118" rx="6" ry="8" fill="url(#techBlue2)" stroke="#00D4FF" stroke-width="1" opacity=".7"/>
+                <!-- Legs -->
+                <path id="fb-leg-l" d="M37 132 Q32 164 34 196 Q36 203 40 203 Q44 203 46 196 Q48 172 46 132Z" fill="url(#techBlue2)" stroke="#00D4FF" stroke-width="1.2" opacity=".85"/>
+                <path id="fb-leg-r" d="M63 132 Q68 164 66 196 Q64 203 60 203 Q56 203 54 196 Q52 172 54 132Z" fill="url(#techBlue2)" stroke="#00D4FF" stroke-width="1.2" opacity=".85"/>
+                <!-- Feet -->
+                <ellipse cx="40" cy="207" rx="10" ry="6" fill="url(#techBlue2)" stroke="#00D4FF" stroke-width="1" opacity=".7"/>
+                <ellipse cx="60" cy="207" rx="10" ry="6" fill="url(#techBlue2)" stroke="#00D4FF" stroke-width="1" opacity=".7"/>
+
+                <!-- Spine line -->
+                <line x1="50" y1="44" x2="50" y2="132" stroke="#0096FF" stroke-width=".5" stroke-dasharray="3,3" opacity=".4"/>
+                <!-- Chest indicator -->
+                <circle cx="50" cy="78" r="10" fill="#0096FF" opacity=".08"/>
+                <path d="M44 80 L47 75 L50 83 L53 75 L56 80" fill="none" stroke="#00D4FF" stroke-width="1.2" opacity=".8" style="animation:glow 1.5s infinite;"/>
+                <!-- Grid -->
+                <line x1="24" y1="65" x2="76" y2="65" stroke="#0096FF" stroke-width=".4" stroke-dasharray="2,5" opacity=".25"/>
+                <line x1="24" y1="90" x2="76" y2="90" stroke="#0096FF" stroke-width=".4" stroke-dasharray="2,5" opacity=".25"/>
+                <line x1="24" y1="115" x2="76" y2="115" stroke="#0096FF" stroke-width=".4" stroke-dasharray="2,5" opacity=".25"/>
+                <!-- Corner frames -->
+                <path d="M4 4 L4 16 M4 4 L16 4" stroke="#0096FF" stroke-width="1.5" opacity=".6"/>
+                <path d="M96 4 L96 16 M96 4 L84 4" stroke="#0096FF" stroke-width="1.5" opacity=".6"/>
+                <path d="M4 216 L4 204 M4 216 L16 216" stroke="#0096FF" stroke-width="1.5" opacity=".6"/>
+                <path d="M96 216 L96 204 M96 216 L84 216" stroke="#0096FF" stroke-width="1.5" opacity=".6"/>
+                <!-- Measurement lines -->
+                <line x1="0" y1="50" x2="8" y2="50" stroke="#0096FF" stroke-width=".8" opacity=".4"/>
+                <line x1="0" y1="130" x2="8" y2="130" stroke="#0096FF" stroke-width=".8" opacity=".4"/>
+                <line x1="0" y1="200" x2="8" y2="200" stroke="#0096FF" stroke-width=".8" opacity=".4"/>
+                <text x="-2" y="53" font-size="5" fill="#0096FF" opacity=".5" text-anchor="end">44</text>
+                <text x="-2" y="133" font-size="5" fill="#0096FF" opacity=".5" text-anchor="end">78</text>
+                <text x="-2" y="203" font-size="5" fill="#0096FF" opacity=".5" text-anchor="end">172</text>
+                <!-- HUD data points -->
+                <circle cx="50" cy="20" r="2.5" fill="#00D4FF" opacity=".6" style="animation:pulse 2s infinite;"/>
+                <circle cx="50" cy="78" r="2.5" fill="#00D4FF" opacity=".6" style="animation:pulse 2.5s infinite;"/>
+                <circle cx="50" cy="130" r="2" fill="#0096FF" opacity=".5" style="animation:pulse 3s infinite;"/>
+              </svg>
+              <!-- HUD Labels -->
+              <div class="body3d-hud" style="top:14px;left:5px;font-size:8px;">SKULL</div>
+              <div class="body3d-hud" style="top:90px;right:5px;text-align:right;font-size:8px;">CHEST</div>
+              <div class="body3d-hud" style="top:145px;left:5px;font-size:8px;">CORE</div>
+              <div class="body3d-hud" style="bottom:55px;right:5px;text-align:right;font-size:8px;">LIMBS</div>
+            </div>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:12px;width:100%;">
+              <div style="text-align:center;background:rgba(0,150,255,.08);border-radius:8px;padding:8px;border:1px solid rgba(0,150,255,.15);">
+                <div style="font-family:var(--font-mono);font-size:13px;color:#00D4FF;font-weight:700;">18.2%</div>
+                <div style="font-size:9px;color:rgba(0,150,255,.5);text-transform:uppercase;margin-top:1px;">Body Fat</div>
+              </div>
+              <div style="text-align:center;background:rgba(0,150,255,.08);border-radius:8px;padding:8px;border:1px solid rgba(0,150,255,.15);">
+                <div style="font-family:var(--font-mono);font-size:13px;color:#00D4FF;font-weight:700;">42.8%</div>
+                <div style="font-size:9px;color:rgba(0,150,255,.5);text-transform:uppercase;margin-top:1px;">Muscle</div>
+              </div>
+              <div style="text-align:center;background:rgba(0,150,255,.08);border-radius:8px;padding:8px;border:1px solid rgba(0,150,255,.15);">
+                <div style="font-family:var(--font-mono);font-size:13px;color:#00D4FF;font-weight:700;">58.4%</div>
+                <div style="font-size:9px;color:rgba(0,150,255,.5);text-transform:uppercase;margin-top:1px;">Water</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Body metrics -->
+          <div style="grid-column:span 2;display:flex;flex-direction:column;gap:14px;">
+            <div class="g3c">
+              <div class="mpill"><div class="icon">⚖️</div><div class="val">70kg</div><div class="lbl">Weight</div><div class="chg chg-g">✓ Normal</div></div>
+              <div class="mpill"><div class="icon">📏</div><div class="val">172cm</div><div class="lbl">Height</div></div>
+              <div class="mpill"><div class="icon">🫀</div><div class="val">72bpm</div><div class="lbl">Heart Rate</div><div class="chg chg-g">✓ Normal</div></div>
+              <div class="mpill"><div class="icon">🩸</div><div class="val">98%</div><div class="lbl">Blood O₂</div><div class="chg chg-g">✓ Excellent</div></div>
+              <div class="mpill"><div class="icon">🌡️</div><div class="val">36.8°</div><div class="lbl">Temp</div><div class="chg chg-g">✓ Normal</div></div>
+              <div class="mpill"><div class="icon">💉</div><div class="val">B+</div><div class="lbl">Blood Group</div></div>
+            </div>
+            <!-- BMI classification -->
+            <div class="card">
+              <div class="sh">BMI Analysis — 23.8 (Normal)</div>
+              <div style="position:relative;height:16px;background:linear-gradient(90deg,var(--blue-bg) 0%,var(--teal-bg) 30%,var(--teal-bg) 60%,var(--amber-bg) 80%,var(--red-bg) 100%);border-radius:8px;margin-bottom:20px;overflow:hidden;">
+                <div style="position:absolute;left:0;top:0;bottom:0;width:30%;background:var(--blue);opacity:.3;"></div>
+                <div style="position:absolute;left:30%;top:0;bottom:0;width:30%;background:var(--teal-l);opacity:.3;"></div>
+                <div style="position:absolute;left:60%;top:0;bottom:0;width:20%;background:var(--amber-l);opacity:.3;"></div>
+                <div style="position:absolute;left:80%;top:0;bottom:0;width:20%;background:var(--red-l);opacity:.3;"></div>
+                <!-- Marker at ~60% = 23.8 -->
+                <div style="position:absolute;left:calc(42% - 6px);top:-4px;width:12px;height:24px;background:var(--text);border-radius:3px;z-index:2;"></div>
+              </div>
+              <div style="display:flex;justify-content:space-between;font-size:10.5px;color:var(--muted);margin-top:-12px;">
+                <span>Underweight<br/>&lt;18.5</span><span style="text-align:center;color:var(--teal);font-weight:700;">Normal ✓<br/>18.5–24.9</span><span style="text-align:center;">Overweight<br/>25–29.9</span><span style="text-align:right;">Obese<br/>≥30</span>
+              </div>
+              <div style="margin-top:14px;background:var(--teal-bg);border-radius:9px;padding:12px;font-size:13px;color:var(--teal);line-height:1.65;">
+                ✅ <strong>BMI 23.8 — Normal weight.</strong> Your main health risks are sleep and sedentary lifestyle, not weight. Focus on sleep, activity, and fiber intake.
+              </div>
+            </div>
+
+            <!-- Health Zones -->
+            <div class="card">
+              <div class="sh">Health Zones — Circular View</div>
+              <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;">
+                <div style="text-align:center;">
+                  <svg width="80" height="80" viewBox="0 0 80 80" style="transform:rotate(-90deg)">
+                    <circle cx="40" cy="40" r="32" fill="none" stroke="var(--border)" stroke-width="7"/>
+                    <circle cx="40" cy="40" r="32" fill="none" stroke="var(--red-l)" stroke-width="7" stroke-linecap="round" stroke-dasharray="201" stroke-dashoffset="105"/>
+                  </svg>
+                  <div style="font-family:var(--font-head);font-size:14px;font-weight:700;color:var(--red-l);margin-top:2px;">48%</div>
+                  <div style="font-size:10px;color:var(--muted);">Sleep</div>
+                </div>
+                <div style="text-align:center;">
+                  <svg width="80" height="80" viewBox="0 0 80 80" style="transform:rotate(-90deg)">
+                    <circle cx="40" cy="40" r="32" fill="none" stroke="var(--border)" stroke-width="7"/>
+                    <circle cx="40" cy="40" r="32" fill="none" stroke="var(--teal-l)" stroke-width="7" stroke-linecap="round" stroke-dasharray="201" stroke-dashoffset="56"/>
+                  </svg>
+                  <div style="font-family:var(--font-head);font-size:14px;font-weight:700;color:var(--teal-l);margin-top:2px;">72%</div>
+                  <div style="font-size:10px;color:var(--muted);">Nutrition</div>
+                </div>
+                <div style="text-align:center;">
+                  <svg width="80" height="80" viewBox="0 0 80 80" style="transform:rotate(-90deg)">
+                    <circle cx="40" cy="40" r="32" fill="none" stroke="var(--border)" stroke-width="7"/>
+                    <circle cx="40" cy="40" r="32" fill="none" stroke="var(--amber-l)" stroke-width="7" stroke-linecap="round" stroke-dasharray="201" stroke-dashoffset="71"/>
+                  </svg>
+                  <div style="font-family:var(--font-head);font-size:14px;font-weight:700;color:var(--amber-l);margin-top:2px;">65%</div>
+                  <div style="font-size:10px;color:var(--muted);">Activity</div>
+                </div>
+                <div style="text-align:center;">
+                  <svg width="80" height="80" viewBox="0 0 80 80" style="transform:rotate(-90deg)">
+                    <circle cx="40" cy="40" r="32" fill="none" stroke="var(--border)" stroke-width="7"/>
+                    <circle cx="40" cy="40" r="32" fill="none" stroke="var(--blue)" stroke-width="7" stroke-linecap="round" stroke-dasharray="201" stroke-dashoffset="65"/>
+                  </svg>
+                  <div style="font-family:var(--font-head);font-size:14px;font-weight:700;color:var(--blue);margin-top:2px;">68%</div>
+                  <div style="font-size:10px;color:var(--muted);">Hydration</div>
+                </div>
+                <div style="text-align:center;">
+                  <svg width="80" height="80" viewBox="0 0 80 80" style="transform:rotate(-90deg)">
+                    <circle cx="40" cy="40" r="32" fill="none" stroke="var(--border)" stroke-width="7"/>
+                    <circle cx="40" cy="40" r="32" fill="none" stroke="var(--teal-l)" stroke-width="7" stroke-linecap="round" stroke-dasharray="201" stroke-dashoffset="36"/>
+                  </svg>
+                  <div style="font-family:var(--font-head);font-size:14px;font-weight:700;color:var(--teal-l);margin-top:2px;">82%</div>
+                  <div style="font-size:10px;color:var(--muted);">Mental</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── HOSTEL MODE ── -->
+      <div class="inner-page full-content" id="ip-hostel">
+        <div class="ph"><div class="ph-left"><h1>Hostel Mode 🏠</h1><p>Log your hostel menu — AI fills nutritional gaps & suggests cheap healthy add-ons</p></div></div>
+        <div class="g2c">
+          <div class="card">
+            <div class="sh">Today's Hostel Menu</div>
+            <div class="hostel-meal"><div class="hostel-meal-name">🌅 Breakfast</div><div class="fg" style="margin-bottom:6px;"><input type="text" placeholder="e.g. Idli sambhar, upma" id="hm-b" value="Idli sambhar (4 pieces)"/></div><div style="display:flex;gap:6px;flex-wrap:wrap;"><span class="macro-chip" style="background:var(--amber-bg);color:var(--amber);">~320 kcal</span><span class="macro-chip" style="background:var(--blue-bg);color:var(--blue);">8g protein</span><span class="macro-chip" style="background:var(--red-bg);color:var(--red);">Low fiber</span></div></div>
+            <div class="hostel-meal"><div class="hostel-meal-name">☀️ Lunch</div><div class="fg" style="margin-bottom:6px;"><input type="text" placeholder="e.g. Rice, dal, sabzi" id="hm-l" value="Rice, dal, potato sabzi, buttermilk"/></div><div style="display:flex;gap:6px;flex-wrap:wrap;"><span class="macro-chip" style="background:var(--amber-bg);color:var(--amber);">~600 kcal</span><span class="macro-chip" style="background:var(--blue-bg);color:var(--blue);">15g protein</span><span class="macro-chip" style="background:var(--amber-bg);color:var(--amber);">High carbs</span></div></div>
+            <div class="hostel-meal"><div class="hostel-meal-name">🌙 Dinner</div><div class="fg" style="margin-bottom:6px;"><input type="text" placeholder="e.g. Chapati, dal, sabzi" id="hm-d" value="Chapati (3), dal makhani, salad"/></div><div style="display:flex;gap:6px;flex-wrap:wrap;"><span class="macro-chip" style="background:var(--amber-bg);color:var(--amber);">~520 kcal</span><span class="macro-chip" style="background:var(--blue-bg);color:var(--blue);">14g protein</span><span class="macro-chip" style="background:var(--teal-bg);color:var(--teal);">Good variety</span></div></div>
+            <button class="btn btn-dark" style="width:100%;margin-top:6px;" onclick="showToast('AI analyzing hostel menu…')">Analyze & Get Suggestions</button>
+          </div>
+          <div class="card">
+            <div class="sh">AI Nutrition Gap Analysis</div>
+            <div style="display:flex;flex-direction:column;gap:10px;">
+              <div style="background:var(--teal-bg);border-radius:11px;padding:13px;"><div style="font-weight:700;color:var(--teal);margin-bottom:4px;">✓ Total calories: ~1,440 kcal</div><div style="font-size:12.5px;color:var(--text2);">Healthy range. Add ~560 kcal from snacks/extras.</div></div>
+              <div style="background:var(--red-bg);border-radius:11px;padding:13px;"><div style="font-weight:700;color:var(--red);margin-bottom:4px;">⚠ Protein gap: 53g short</div><div style="font-size:12.5px;color:var(--text2);">Add eggs, paneer, or curd between meals. Hostel gives ~37g vs 90g goal.</div></div>
+              <div style="background:var(--amber-bg);border-radius:11px;padding:13px;"><div style="font-weight:700;color:var(--amber);margin-bottom:4px;">⚡ Fiber: borderline low</div><div style="font-size:12.5px;color:var(--text2);">1 apple + raw salad at dinner cuts your GI risk by 18%.</div></div>
+              <div style="background:var(--blue-bg);border-radius:11px;padding:13px;"><div style="font-weight:700;color:var(--blue);margin-bottom:4px;">💡 Suggested additions (cheap)</div><div style="font-size:12.5px;color:var(--text2);">1 boiled egg · 200g curd · 1 banana · Makhana 30g · Extra glass of water</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── LIFESTYLE PATHS ── -->
+      <div class="inner-page full-content" id="ip-lifestyle">
+        <div class="ph"><div class="ph-left"><h1>Life Prediction</h1><p>AI forecast of where your current vs optimal lifestyle leads in 5–10 years</p></div></div>
+        <div class="g2c" style="margin-bottom:14px;">
+          <div class="pred-card pred-bad">
+            <div style="font-size:36px;opacity:.2;position:absolute;top:20px;right:20px;">⚠️</div>
+            <h3>Current Path</h3>
+            <div style="font-size:10px;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">If nothing changes — 5 year forecast</div>
+            <p>Chronic sleep deprivation leads to metabolic syndrome and early cardiovascular stress. Low activity with high carbs raises insulin resistance. Vitamin D deficiency worsens mood. You may face burnout, anxiety, and weight gain of 8–12kg by age 27.</p>
+            <div style="margin-top:14px;display:flex;flex-direction:column;gap:7px;">
+              <div style="font-size:12.5px;color:rgba(255,255,255,.65);display:flex;gap:8px;"><span style="color:#FF6B6B;">●</span><span>CVD risk: <strong>34% → 55%</strong></span></div>
+              <div style="font-size:12.5px;color:rgba(255,255,255,.65);display:flex;gap:8px;"><span style="color:#FF6B6B;">●</span><span>T2D risk: <strong>28% → 42%</strong></span></div>
+              <div style="font-size:12.5px;color:rgba(255,255,255,.65);display:flex;gap:8px;"><span style="color:#FF6B6B;">●</span><span>Mental health: <strong>Chronic anxiety likely</strong></span></div>
+              <div style="font-size:12.5px;color:rgba(255,255,255,.65);display:flex;gap:8px;"><span style="color:#FF6B6B;">●</span><span>Life quality: <strong>Declining steadily</strong></span></div>
+            </div>
+          </div>
+          <div class="pred-card pred-good">
+            <div style="font-size:36px;opacity:.2;position:absolute;top:20px;right:20px;">🌿</div>
+            <h3>Optimal Path</h3>
+            <div style="font-size:10px;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">With 4 changes — 5 year forecast</div>
+            <p>Sleeping 8h consistently, walking 8k steps, eating fiber-rich meals, and staying hydrated transforms your baseline health. Energy up 40%. Cognitive peak. Body composition improves naturally. You enter your late 20s with a robust health foundation.</p>
+            <div style="margin-top:14px;display:flex;flex-direction:column;gap:7px;">
+              <div style="font-size:12.5px;color:rgba(255,255,255,.65);display:flex;gap:8px;"><span style="color:#4DD89A;">●</span><span>CVD risk: <strong>34% → 12%</strong></span></div>
+              <div style="font-size:12.5px;color:rgba(255,255,255,.65);display:flex;gap:8px;"><span style="color:#4DD89A;">●</span><span>T2D risk: <strong>28% → 8%</strong></span></div>
+              <div style="font-size:12.5px;color:rgba(255,255,255,.65);display:flex;gap:8px;"><span style="color:#4DD89A;">●</span><span>Mental health: <strong>Resilient, stable mood</strong></span></div>
+              <div style="font-size:12.5px;color:rgba(255,255,255,.65);display:flex;gap:8px;"><span style="color:#4DD89A;">●</span><span>Life quality: <strong>Improving steadily</strong></span></div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="sh">The 4 Changes That Transform Your Path</div>
+          <div class="g4c">
+            <div style="background:linear-gradient(135deg,#020912,#0A1F2E);border-radius:13px;padding:18px;color:#fff;border:1px solid rgba(0,150,255,.15);">
+              <div style="font-size:22px;margin-bottom:8px;">💤</div>
+              <div style="font-family:var(--font-head);font-size:15px;font-weight:700;margin-bottom:5px;">Sleep 8h</div>
+              <div style="font-size:11.5px;opacity:.6;line-height:1.6;">Consistent 10:30PM bedtime. Cuts CFS risk by 40%. Single most impactful change.</div>
+            </div>
+            <div style="background:linear-gradient(135deg,#020912,#0A1A2E);border-radius:13px;padding:18px;color:#fff;border:1px solid rgba(0,150,255,.15);">
+              <div style="font-size:22px;margin-bottom:8px;">🚶</div>
+              <div style="font-family:var(--font-head);font-size:15px;font-weight:700;margin-bottom:5px;">Walk 8k steps</div>
+              <div style="font-size:11.5px;opacity:.6;line-height:1.6;">30 min brisk walk reduces CVD by 18%, improves mood & insulin sensitivity.</div>
+            </div>
+            <div style="background:linear-gradient(135deg,#020912,#1A0A2E);border-radius:13px;padding:18px;color:#fff;border:1px solid rgba(0,150,255,.15);">
+              <div style="font-size:22px;margin-bottom:8px;">🥗</div>
+              <div style="font-family:var(--font-head);font-size:15px;font-weight:700;margin-bottom:5px;">Fiber + protein</div>
+              <div style="font-size:11.5px;opacity:.6;line-height:1.6;">3 vegetable servings + 90g protein. Gut health, satiety, muscle maintenance.</div>
+            </div>
+            <div style="background:linear-gradient(135deg,#020912,#0A2A1A);border-radius:13px;padding:18px;color:#fff;border:1px solid rgba(0,150,255,.15);">
+              <div style="font-size:22px;margin-bottom:8px;">💧</div>
+              <div style="font-family:var(--font-head);font-size:15px;font-weight:700;margin-bottom:5px;">Stay hydrated</div>
+              <div style="font-size:11.5px;opacity:.6;line-height:1.6;">2.5L daily. Controls BP, kidney function, reduces fatigue by 30%.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── SMART WATCH ── -->
+      <div class="inner-page full-content" id="ip-watch">
+        <div class="ph"><div class="ph-left"><h1>Smart Watch</h1><p>Connect your watch to auto-log steps, heart rate, sleep, calories & SpO2</p></div></div>
+        <div class="g2c" style="margin-bottom:14px;">
+          <div>
+            <div class="watch-connect" id="watch-connect-btn" onclick="connectWatch()">
+              <div style="font-size:48px;margin-bottom:14px;">⌚</div>
+              <div style="font-weight:700;font-size:15px;margin-bottom:5px;">Connect Your Watch</div>
+              <div style="font-size:13px;color:var(--muted);margin-bottom:18px;">All major brands supported — auto-log all health data</div>
+              <div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:16px;">
+                <span class="badge bb">🍎 Apple Watch</span>
+                <span class="badge bg">📳 Galaxy Watch</span>
+                <span class="badge bw">🔵 Fitbit</span>
+                <span class="badge bv">🟣 Garmin</span>
+                <span class="badge bc">⭕ Mi Band</span>
+                <span class="badge br">🔴 Polar</span>
+                <span class="badge bb">💙 Noise</span>
+                <span class="badge bg">🟢 Boat</span>
+              </div>
+              <button class="btn btn-blue" onclick="connectWatch();event.stopPropagation()">+ Connect Watch</button>
+            </div>
+            <div class="watch-connected" id="watch-connected-panel" style="display:none;">
+              <div style="display:flex;align-items:center;gap:12px;margin-bottom:18px;">
+                <div style="font-size:26px;">⌚</div>
+                <div><div style="font-family:var(--font-head);font-size:17px;font-weight:700;color:#fff;">Apple Watch Series 9</div><div style="font-size:12px;color:#00D4FF;margin-top:2px;">● Live · Last sync 2 min ago</div></div>
+              </div>
+              <div class="g2c">
+                <div class="wm"><div class="wmval">72 bpm</div><div class="wmlbl">Heart Rate</div></div>
+                <div class="wm"><div class="wmval">4,821</div><div class="wmlbl">Steps Today</div></div>
+                <div class="wm"><div class="wmval">6.2h</div><div class="wmlbl">Sleep Last Night</div></div>
+                <div class="wm"><div class="wmval">98%</div><div class="wmlbl">SpO₂</div></div>
+                <div class="wm"><div class="wmval">420</div><div class="wmlbl">kcal Burned</div></div>
+                <div class="wm"><div class="wmval">16</div><div class="wmlbl">Breaths/min</div></div>
+              </div>
+              <div style="margin-top:12px;background:rgba(0,150,255,.08);border-radius:10px;padding:12px;font-size:12px;color:rgba(255,255,255,.6);border:1px solid rgba(0,150,255,.1);">
+                ✅ Auto-logging: steps, sleep, heart rate, SpO₂, calories burned. No manual entry needed for these metrics.
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="sh">What Gets Auto-Logged</div>
+            <div style="display:flex;flex-direction:column;gap:9px;">
+              <div style="display:flex;align-items:center;gap:12px;padding:11px;background:var(--teal-bg);border-radius:9px;"><span style="font-size:17px;">👣</span><div style="flex:1;"><div style="font-weight:600;font-size:13px;">Steps & Activity</div><div style="font-size:11.5px;color:var(--muted);">Hourly step count, active minutes, distance</div></div><span class="badge bg">Auto</span></div>
+              <div style="display:flex;align-items:center;gap:12px;padding:11px;background:var(--red-bg);border-radius:9px;"><span style="font-size:17px;">❤️</span><div style="flex:1;"><div style="font-weight:600;font-size:13px;">Heart Rate & HRV</div><div style="font-size:11.5px;color:var(--muted);">Resting, active, recovery, variability</div></div><span class="badge bg">Auto</span></div>
+              <div style="display:flex;align-items:center;gap:12px;padding:11px;background:var(--violet-bg);border-radius:9px;"><span style="font-size:17px;">😴</span><div style="flex:1;"><div style="font-weight:600;font-size:13px;">Sleep Stages</div><div style="font-size:11.5px;color:var(--muted);">Deep, REM, light, awakenings, efficiency</div></div><span class="badge bg">Auto</span></div>
+              <div style="display:flex;align-items:center;gap:12px;padding:11px;background:var(--blue-bg);border-radius:9px;"><span style="font-size:17px;">🫁</span><div style="flex:1;"><div style="font-weight:600;font-size:13px;">SpO₂ & Respiratory</div><div style="font-size:11.5px;color:var(--muted);">Blood oxygen, breathing rate</div></div><span class="badge bg">Auto</span></div>
+              <div style="display:flex;align-items:center;gap:12px;padding:11px;background:var(--amber-bg);border-radius:9px;"><span style="font-size:17px;">🔥</span><div style="flex:1;"><div style="font-weight:600;font-size:13px;">Calories Burned</div><div style="font-size:11.5px;color:var(--muted);">BMR + active calories, exercise detection</div></div><span class="badge bg">Auto</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── PROFILE ── -->
+      <div class="inner-page full-content" id="ip-profile">
+        <div class="ph"><div class="ph-left"><h1>Profile</h1><p>Your personal health information and body model</p></div></div>
+        <div style="display:grid;grid-template-columns:260px 1fr;gap:16px;">
+          <div>
+            <div class="card" style="text-align:center;margin-bottom:14px;">
+              <div style="width:68px;height:68px;border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--blue-l));display:flex;align-items:center;justify-content:center;color:#fff;font-family:var(--font-head);font-size:24px;font-weight:700;margin:0 auto 12px;" id="p-av">A</div>
+              <div style="font-family:var(--font-head);font-size:18px;font-weight:700;" id="p-name">Arjun Sharma</div>
+              <div style="font-size:12.5px;color:var(--muted);margin-bottom:12px;">arjun@example.com</div>
+              <div class="badge bb" style="justify-content:center;margin-bottom:14px;">Premium Member</div>
+              <div class="g2" style="gap:8px;font-size:12px;text-align:center;">
+                <div style="background:var(--bg);border-radius:9px;padding:10px;"><div style="font-family:var(--font-head);font-size:20px;color:var(--blue);">14</div><div style="color:var(--muted);">Days logged</div></div>
+                <div style="background:var(--bg);border-radius:9px;padding:10px;"><div style="font-family:var(--font-head);font-size:20px;" id="p-bmi">23.8</div><div style="color:var(--muted);">BMI</div></div>
+              </div>
+            </div>
+            <!-- Mini body visual on profile -->
+            <div class="card card-dark profile-body-card">
+              <div style="font-size:10px;font-weight:700;color:rgba(0,150,255,.6);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px;">Body Scan</div>
+              <div class="body3d-wrap" style="padding:8px 16px;">
+                <div class="body3d-scan"><div class="scan-beam"></div></div>
+                <svg class="body3d-svg" width="120" height="180" viewBox="0 0 100 220" id="profile-body-svg">
+                  <ellipse cx="50" cy="20" rx="15" ry="17" fill="url(#techBlue2)" stroke="#00D4FF" stroke-width="1.2" filter="url(#glow2)"/>
+                  <rect x="44" y="35" width="12" height="10" rx="3" fill="url(#techBlue2)" stroke="#00D4FF" stroke-width="1"/>
+                  <path id="pr-torso" d="M30 52 Q24 88 27 132 L37 132 L39 102 L50 107 L61 102 L63 132 L73 132 Q76 88 70 52 Q62 45 50 44 Q38 45 30 52Z" fill="url(#techBlue2)" stroke="#00D4FF" stroke-width="1.2" filter="url(#glow2)"/>
+                  <path d="M22 56 Q12 76 14 104 Q16 112 20 112 Q24 112 26 104 Q28 84 30 60Z" fill="url(#techBlue2)" stroke="#00D4FF" stroke-width=".8" opacity=".8"/>
+                  <path d="M78 56 Q88 76 86 104 Q84 112 80 112 Q76 112 74 104 Q72 84 70 60Z" fill="url(#techBlue2)" stroke="#00D4FF" stroke-width=".8" opacity=".8"/>
+                  <path d="M37 132 Q32 162 34 192 Q36 198 40 198 Q44 198 46 192 Q48 170 46 132Z" fill="url(#techBlue2)" stroke="#00D4FF" stroke-width=".8" opacity=".8"/>
+                  <path d="M63 132 Q68 162 66 192 Q64 198 60 198 Q56 198 54 192 Q52 170 54 132Z" fill="url(#techBlue2)" stroke="#00D4FF" stroke-width=".8" opacity=".8"/>
+                  <path d="M44 78 L47 73 L50 81 L53 73 L56 78" fill="none" stroke="#00D4FF" stroke-width="1.2" opacity=".8" style="animation:glow 1.5s infinite;"/>
+                  <path d="M4 4 L4 12 M4 4 L12 4" stroke="#0096FF" stroke-width="1.2" opacity=".5"/>
+                  <path d="M96 4 L96 12 M96 4 L88 4" stroke="#0096FF" stroke-width="1.2" opacity=".5"/>
+                  <path d="M4 216 L4 208 M4 216 L12 216" stroke="#0096FF" stroke-width="1.2" opacity=".5"/>
+                  <path d="M96 216 L96 208 M96 216 L88 216" stroke="#0096FF" stroke-width="1.2" opacity=".5"/>
+                </svg>
+              </div>
+              <div class="badge bb" style="margin-top:6px;font-size:10px;">BMI 23.8 · Normal</div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="sh">Personal Information</div>
+            <div class="g2c" style="margin-bottom:10px;">
+              <div class="fg"><label>First name</label><input type="text" value="Arjun" id="pr-first"/></div>
+              <div class="fg"><label>Last name</label><input type="text" value="Sharma" id="pr-last"/></div>
+              <div class="fg"><label>Age</label><input type="number" value="22" id="pr-age"/></div>
+              <div class="fg"><label>Gender</label><select><option selected>Male</option><option>Female</option><option>Other</option></select></div>
+              <div class="fg"><label>Height (cm)</label><input type="number" value="172" id="pr-h" oninput="updateBMIDisplay()"/></div>
+              <div class="fg"><label>Weight (kg)</label><input type="number" value="70" id="pr-w" oninput="updateBMIDisplay()"/></div>
+              <div class="fg"><label>Blood group</label><select><option selected>B+</option><option>A+</option><option>O+</option><option>AB+</option></select></div>
+              <div class="fg"><label>Activity level</label><select><option>Sedentary</option><option selected>Lightly active</option><option>Moderately active</option><option>Very active</option></select></div>
+            </div>
+            <div class="g2c" style="margin-bottom:10px;">
+              <div class="fg"><label>Medical history</label><textarea rows="2">None</textarea></div>
+              <div class="fg"><label>Medications</label><input type="text" value="None"/></div>
+              <div class="fg"><label>Allergies</label><input type="text" value="None known"/></div>
+              <div class="fg"><label>Living situation</label><select><option selected>College Hostel</option><option>Home</option><option>PG</option></select></div>
+            </div>
+            <div style="display:flex;gap:10px;">
+              <button class="btn btn-dark" onclick="saveProfile()">Save changes</button>
+              <button class="btn btn-ghost" onclick="showToast('Health report exported as PDF')">Export Report</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── SETTINGS ── -->
+      <div class="inner-page full-content" id="ip-settings">
+        <div class="ph"><div class="ph-left"><h1>Settings</h1><p>Customize your Vital experience</p></div></div>
+        <div class="g2c">
+          <div>
+            <div class="card" style="margin-bottom:14px;">
+              <div class="sh">Preferences</div>
+              <div class="t-row"><div><div class="t-lbl">Dark mode</div><div class="t-desc">Switch to dark interface</div></div><label class="toggle"><input type="checkbox" onchange="toggleDark(this)"/><span class="tslider"></span></label></div>
+              <div class="t-row"><div><div class="t-lbl">Hostel mode</div><div class="t-desc">Enable hostel food logging</div></div><label class="toggle"><input type="checkbox" checked/><span class="tslider"></span></label></div>
+              <div class="t-row"><div><div class="t-lbl">Daily log reminder</div><div class="t-desc">Remind at 9 PM each day</div></div><label class="toggle"><input type="checkbox" checked/><span class="tslider"></span></label></div>
+              <div class="t-row"><div><div class="t-lbl">Water notifications</div><div class="t-desc">Every 90 min reminders</div></div><label class="toggle"><input type="checkbox" checked/><span class="tslider"></span></label></div>
+              <div class="t-row"><div><div class="t-lbl">Sleep reminders</div><div class="t-desc">Bedtime alert at 10:30 PM</div></div><label class="toggle"><input type="checkbox" checked/><span class="tslider"></span></label></div>
+              <div class="t-row"><div><div class="t-lbl">Health alerts</div><div class="t-desc">Notify when risk score changes significantly</div></div><label class="toggle"><input type="checkbox" checked/><span class="tslider"></span></label></div>
+            </div>
+            <div class="card">
+              <div class="sh">Privacy & Security</div>
+              <p style="font-size:13px;color:var(--text2);line-height:1.7;margin-bottom:12px;">Your data is encrypted and never sold. All AI processing is privacy-first.</p>
+              <div style="background:var(--teal-bg);border-radius:9px;padding:11px 13px;font-size:12px;color:var(--teal);font-weight:600;margin-bottom:12px;">🔒 AES-256 encrypted · HIPAA compliant · Zero-knowledge</div>
+              <div style="display:flex;gap:10px;">
+                <button class="btn btn-ghost btn-sm" onclick="showToast('Exporting your data…')">Export data</button>
+                <button class="btn btn-sm" style="background:var(--red-bg);color:var(--red);border:1px solid rgba(180,35,24,.2);" onclick="showToast('Request submitted')">Delete account</button>
+              </div>
+            </div>
+          </div>
+          <div>
+            <div class="card" style="margin-bottom:14px;">
+              <div class="sh">Notification Schedule</div>
+              <div style="display:flex;flex-direction:column;gap:9px;">
+                <div style="background:var(--blue-bg);border-radius:9px;padding:12px;display:flex;justify-content:space-between;align-items:center;"><div><div style="font-weight:600;font-size:13px;">💧 Water reminders</div><div style="font-size:12px;color:var(--muted);">Every 90 min, 8AM–10PM (11 per day)</div></div><span class="badge bb">Active</span></div>
+                <div style="background:var(--violet-bg);border-radius:9px;padding:12px;display:flex;justify-content:space-between;align-items:center;"><div><div style="font-weight:600;font-size:13px;">😴 Bedtime reminder</div><div style="font-size:12px;color:var(--muted);">Daily at 10:30 PM</div></div><span class="badge bv">Active</span></div>
+                <div style="background:var(--teal-bg);border-radius:9px;padding:12px;display:flex;justify-content:space-between;align-items:center;"><div><div style="font-weight:600;font-size:13px;">📝 Daily log reminder</div><div style="font-size:12px;color:var(--muted);">Daily at 9:00 PM</div></div><span class="badge bg">Active</span></div>
+                <div style="background:var(--amber-bg);border-radius:9px;padding:12px;display:flex;justify-content:space-between;align-items:center;"><div><div style="font-weight:600;font-size:13px;">🏃 Move reminder</div><div style="font-size:12px;color:var(--muted);">If < 3k steps by 3 PM</div></div><span class="badge bw">Active</span></div>
+              </div>
+              <button class="btn btn-ghost btn-sm" style="margin-top:10px;width:100%;" onclick="testNotif()">Test All Notifications</button>
+            </div>
+            <div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:16px;">
+              <div style="font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.7px;margin-bottom:10px;">AI Engine Info</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px;font-size:12.5px;">
+                <div style="color:var(--muted);">Model</div><div style="font-weight:600;">Preventive v3.0</div>
+                <div style="color:var(--muted);">Accuracy</div><div style="font-weight:600;color:var(--teal);">87.4%</div>
+                <div style="color:var(--muted);">Updated</div><div style="font-weight:600;">Feb 2026</div>
+                <div style="color:var(--muted);">Disease models</div><div style="font-weight:600;">12 conditions</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── DETAIL VIEWS ── -->
+      <div class="inner-page full-content" id="ip-detail-bmi">
+        <div class="detail-back" onclick="showIP('analysis')">← Analysis</div>
+        <div class="ph"><div class="ph-left"><h1>BMI Analysis</h1></div></div>
+        <div class="g3c" style="margin-bottom:14px;">
+          <div class="card" style="text-align:center;padding:32px 20px;">
+            <div style="font-family:var(--font-head);font-size:80px;font-weight:800;color:var(--text);line-height:1;">23.8</div>
+            <div class="badge bg" style="margin:12px auto;">Normal weight ✓</div>
+            <div style="font-size:13px;color:var(--muted);margin-top:8px;">Height 172 cm · Weight 70 kg</div>
+          </div>
+          <div class="card" style="grid-column:span 2;">
+            <div class="sh">BMI Scale & Classification</div>
+            <table class="tbl">
+              <tr><th>BMI Range</th><th>Category</th><th>Your Status</th></tr>
+              <tr><td>&lt; 18.5</td><td>Underweight</td><td>—</td></tr>
+              <tr style="background:var(--teal-bg);"><td><strong>18.5 – 24.9</strong></td><td><strong>Normal weight</strong></td><td><span class="badge bg">✓ You are here</span></td></tr>
+              <tr><td>25 – 29.9</td><td>Overweight</td><td>—</td></tr>
+              <tr><td>≥ 30</td><td>Obese</td><td>—</td></tr>
+            </table>
+            <div style="background:var(--teal-bg);border-radius:9px;padding:12px;margin-top:12px;font-size:13px;color:var(--teal);line-height:1.65;">Your BMI is healthy. Main risks are sleep deprivation and low activity — not weight. Focus energy on sleep and movement.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="inner-page full-content" id="ip-detail-diet">
+        <div class="detail-back" onclick="showIP('analysis')">← Analysis</div>
+        <div class="ph"><div class="ph-left"><h1>Diet Planning</h1></div></div>
+        <div class="g3c" style="margin-bottom:14px;">
+          <div class="mpill"><div class="icon">🔥</div><div class="val">1,840</div><div class="lbl">kcal today</div><div class="chg chg-g">✓ In range</div></div>
+          <div class="mpill"><div class="icon">🥩</div><div class="val">37g</div><div class="lbl">Protein</div><div class="chg chg-r">↓ Need 90g</div></div>
+          <div class="mpill"><div class="icon">🌾</div><div class="val">8g</div><div class="lbl">Fiber</div><div class="chg chg-r">↓ Need 25g</div></div>
+        </div>
+        <div class="g2c">
+          <div class="card">
+            <div class="sh">Macro Breakdown — Today</div>
+            <div style="display:flex;gap:16px;align-items:center;">
+              <div class="donut-wrap">
+                <svg width="120" height="120" viewBox="0 0 120 120">
+                  <circle cx="60" cy="60" r="46" fill="none" stroke="var(--amber-l)" stroke-width="14" stroke-dasharray="289" stroke-dashoffset="0" transform="rotate(-90 60 60)"/>
+                  <circle cx="60" cy="60" r="46" fill="none" stroke="var(--blue)" stroke-width="14" stroke-dasharray="105 184" stroke-dashoffset="-172" transform="rotate(-90 60 60)"/>
+                  <circle cx="60" cy="60" r="46" fill="none" stroke="var(--violet)" stroke-width="14" stroke-dasharray="86 203" stroke-dashoffset="-277" transform="rotate(-90 60 60)"/>
+                </svg>
+                <div class="donut-inner"><div style="font-family:var(--font-head);font-size:15px;font-weight:700;">Today</div></div>
+              </div>
+              <div style="flex:1;display:flex;flex-direction:column;gap:9px;">
+                <div><div style="display:flex;justify-content:space-between;font-size:12.5px;"><span>🟡 Carbs</span><span style="color:var(--amber-l);font-weight:600;">63%</span></div><div class="pbar"><div class="pfill" style="width:63%;background:var(--amber-l);"></div></div></div>
+                <div><div style="display:flex;justify-content:space-between;font-size:12.5px;"><span>🔵 Protein</span><span style="color:var(--blue);font-weight:600;">18% — Low</span></div><div class="pbar"><div class="pfill" style="width:18%;background:var(--blue);"></div></div></div>
+                <div><div style="display:flex;justify-content:space-between;font-size:12.5px;"><span>🟣 Fat</span><span style="color:var(--violet);font-weight:600;">19%</span></div><div class="pbar"><div class="pfill" style="width:19%;background:var(--violet);"></div></div></div>
+                <div><div style="display:flex;justify-content:space-between;font-size:12.5px;"><span>🔴 Fiber</span><span style="color:var(--red-l);font-weight:600;">8g — Very low</span></div><div class="pbar"><div class="pfill" style="width:32%;background:var(--red-l);"></div></div></div>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="sh">AI Meal Plan — Tomorrow</div>
+            <div style="display:flex;flex-direction:column;gap:8px;">
+              <div style="background:var(--teal-bg);border-radius:9px;padding:11px;"><div style="font-size:10px;color:var(--teal);font-weight:700;text-transform:uppercase;margin-bottom:3px;">Breakfast · 480 kcal</div><div style="font-size:12.5px;">Moong dal chilla (3) + 2 eggs + banana + green tea</div></div>
+              <div style="background:var(--blue-bg);border-radius:9px;padding:11px;"><div style="font-size:10px;color:var(--blue);font-weight:700;text-transform:uppercase;margin-bottom:3px;">Lunch · 600 kcal</div><div style="font-size:12.5px;">Brown rice (1 cup) + dal + mixed veg + salad + curd</div></div>
+              <div style="background:var(--amber-bg);border-radius:9px;padding:11px;"><div style="font-size:10px;color:var(--amber);font-weight:700;text-transform:uppercase;margin-bottom:3px;">Snack · 200 kcal</div><div style="font-size:12.5px;">Mixed nuts 30g + 1 apple + makhana</div></div>
+              <div style="background:var(--violet-bg);border-radius:9px;padding:11px;"><div style="font-size:10px;color:var(--violet);font-weight:700;text-transform:uppercase;margin-bottom:3px;">Dinner · 520 kcal</div><div style="font-size:12.5px;">2 chapati + paneer bhurji (100g) + cucumber raita + salad</div></div>
+              <div style="text-align:right;font-size:11.5px;color:var(--muted);">Total: 1,800 kcal · 88g protein · 28g fiber</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="inner-page full-content" id="ip-detail-exercise">
+        <div class="detail-back" onclick="showIP('analysis')">← Analysis</div>
+        <div class="ph"><div class="ph-left"><h1>Exercise Analysis</h1></div></div>
+        <div class="g4c" style="margin-bottom:14px;">
+          <div class="mpill"><div class="icon">🚶</div><div class="val">3,200</div><div class="lbl">Steps / day</div><div class="chg chg-w">↓ Goal: 10k</div></div>
+          <div class="mpill"><div class="icon">🔥</div><div class="val">180</div><div class="lbl">kcal burned</div><div class="chg chg-r">↓ Low</div></div>
+          <div class="mpill"><div class="icon">📅</div><div class="val">3/7</div><div class="lbl">Active days</div><div class="chg chg-g">Keep going</div></div>
+          <div class="mpill"><div class="icon">❤️</div><div class="val">72bpm</div><div class="lbl">Resting HR</div><div class="chg chg-g">✓ Normal</div></div>
+        </div>
+        <div class="card">
+          <div class="sh">Steps This Week</div>
+          <div class="cbars" style="height:100px;">
+            <div class="cbar-w"><div class="cbar-v">2.1k</div><div class="cbar" style="height:21%;background:linear-gradient(180deg,#FCA5A5,var(--red-l));"></div><div class="cbar-l">Mon</div></div>
+            <div class="cbar-w"><div class="cbar-v">4.2k</div><div class="cbar" style="height:42%;background:linear-gradient(180deg,#F9A825,var(--amber-l));"></div><div class="cbar-l">Tue</div></div>
+            <div class="cbar-w"><div class="cbar-v">3.8k</div><div class="cbar" style="height:38%;background:linear-gradient(180deg,#F9A825,var(--amber-l));"></div><div class="cbar-l">Wed</div></div>
+            <div class="cbar-w"><div class="cbar-v">5.5k</div><div class="cbar" style="height:55%;background:linear-gradient(180deg,#7BC67E,var(--teal-l));"></div><div class="cbar-l">Thu</div></div>
+            <div class="cbar-w"><div class="cbar-v">2.9k</div><div class="cbar" style="height:29%;background:linear-gradient(180deg,#FCA5A5,var(--red-l));"></div><div class="cbar-l">Fri</div></div>
+            <div class="cbar-w"><div class="cbar-v">8.1k</div><div class="cbar" style="height:81%;background:linear-gradient(180deg,#34D399,var(--teal-l));"></div><div class="cbar-l">Sat</div></div>
+            <div class="cbar-w"><div class="cbar-v">4.3k</div><div class="cbar" style="height:43%;background:linear-gradient(180deg,#F9A825,var(--amber-l));"></div><div class="cbar-l">Sun</div></div>
+          </div>
+          <div style="font-size:12px;color:var(--muted);margin-top:8px;">Average: 4,414 steps · Goal: 10,000 steps per day</div>
+        </div>
+      </div>
+
+      <!-- Disease Detail -->
+      <div class="inner-page full-content" id="ip-disease-detail">
+        <div class="detail-back" onclick="showIP('diseases')">← Disease Risk</div>
+        <div id="disease-content"></div>
+      </div>
+
+    </div><!-- /main -->
+  </div><!-- /app-shell -->
+</div>
+
+<script>
+// ─── DISEASE DATA ───
+const diseaseData={cfs:{name:'Chronic Fatigue Syndrome',risk:48,level:'High',color:'var(--red-l)',icon:'😴',desc:'CFS is characterized by extreme fatigue not improved by rest. Your sleep debt of 12.6h this week and high stress (5.8/10) are primary risk drivers.',causes:'Persistent sleep deprivation, viral triggers, immune dysfunction, chronic psychological stress, sedentary lifestyle (3,200 avg steps).',symptoms:'Extreme fatigue lasting 6+ months, post-exertional malaise, unrefreshing sleep, brain fog, muscle/joint pain, headaches.',prevention:'1. Prioritize 8h sleep — set 10:30 PM bedtime consistently. 2. Progressive exercise starting with 20 min walks. 3. Meditation 10 min daily. 4. B-vitamins and magnesium-rich diet. 5. Avoid overcommitting.',diet:'Magnesium: spinach, almonds, dark chocolate. Anti-inflammatory: turmeric, ginger, omega-3s. B-vitamins: whole grains, eggs, legumes. Avoid: caffeine after 2PM, alcohol, ultra-processed foods.'},cvd:{name:'Cardiovascular Disease',risk:34,level:'Moderate',color:'var(--amber-l)',icon:'❤️',desc:'CVD risk driven by low physical activity (3,200 steps vs 10,000 target), chronic stress, and inadequate sleep causing elevated cortisol and early vascular aging.',causes:'Low cardiorespiratory fitness, sleep deprivation raising blood pressure, sedentary lifestyle reducing HDL cholesterol, stress-induced arterial stiffness.',symptoms:'Chest tightness during exertion, shortness of breath, fatigue after minimal activity, elevated resting heart rate, frequent headaches.',prevention:'1. 150 min moderate aerobic exercise per week. 2. Sleep 8h nightly — reduces CVD risk 20%. 3. Maintain hydration. 4. Avoid smoking. 5. Annual blood pressure checks.',diet:'Oats, fatty fish, olive oil, nuts, berries, leafy greens, avocado. Avoid trans fats, excess salt (< 5g/day), sweetened drinks.'},anxiety:{name:'Depression & Anxiety',risk:35,level:'Moderate',color:'var(--amber-l)',icon:'🧠',desc:'Sleep deprivation dysregulates serotonin and dopamine. Low Vitamin D directly linked to depressive symptoms. Physical inactivity removes a powerful natural antidepressant.',causes:'Sleep deprivation, low Vitamin D, physical inactivity, academic/social pressure, social media overconsumption.',symptoms:'Persistent low mood, excessive worry, sleep changes, fatigue, difficulty concentrating, appetite changes, social withdrawal.',prevention:'1. Sleep is #1 intervention. 2. Daily 30-min physical activity equivalent to mild antidepressants. 3. 15-20 min morning sunlight. 4. Limit social media to < 1h/day. 5. Mindfulness 10 min daily.',diet:'Dark chocolate (70%+), fermented foods (curd, idli), omega-3s, eggs, whole grains, turmeric. Avoid caffeine-alcohol cycle, skipping meals, ultra-processed snacks.'},vitd:{name:'Vitamin D Deficiency',risk:42,level:'Moderate',color:'var(--amber-l)',icon:'☀️',desc:'Over 70% of urban Indian youth are Vitamin D deficient. Indoor hostel life with minimal sun exposure is the primary driver.',causes:'Indoor lifestyle, sunscreen blocking UV-B, insufficient dietary sources, melanin requiring more sun exposure, diet low in fatty fish.',symptoms:'Fatigue, bone/muscle pain, frequent illness, depression, hair loss, slow wound healing, muscle weakness.',prevention:'1. 15–30 min direct sunlight 11AM–2PM on arms/face, 3-4 days/week. 2. Vitamin D3 supplement (1000-2000 IU/day). 3. Fortified foods: milk, eggs, mushrooms. 4. Annual serum 25(OH)D test — aim > 30 ng/mL.',diet:'Egg yolk, fortified milk/curd, sun-exposed mushrooms, fatty fish (mackerel, tuna). Note: food alone rarely sufficient — supplementation + sunlight is gold standard.'},t2d:{name:'Type 2 Diabetes',risk:28,level:'Moderate',color:'var(--amber-l)',icon:'🩸',desc:'Risk driven by high refined carbohydrate diet (63% carbs), low physical activity, and low fiber intake reducing glucose absorption rate.',causes:'High GI diet with white rice/bread, sugary drinks, low fiber, physical inactivity reducing insulin sensitivity.',symptoms:'Increased thirst, frequent urination, unusual hunger, fatigue, blurry vision. Later: slow-healing wounds, nerve tingling.',prevention:'1. Replace white rice with whole grains. 2. Increase fiber to 25g+ daily. 3. Exercise 30 min daily. 4. Limit sugar and sweetened beverages. 5. Annual fasting glucose test from age 25.',diet:'Low-GI: oats, barley, legumes (dal, rajma, chana), vegetables. Include cinnamon, bitter gourd (karela), methi. Avoid white rice in large portions, maida, cold drinks.'},htn:{name:'Hypertension',risk:31,level:'Moderate',color:'var(--amber-l)',icon:'💉',desc:'Risk driven by chronic cortisol elevation from poor sleep, inadequate hydration (only 1.4L vs 2.5L), low potassium intake.',causes:'Chronic stress constricts blood vessels. Dehydration concentrates blood. Low potassium and magnesium from hostel diet. Excess sodium in processed foods.',symptoms:'Usually asymptomatic. Warning signs: frequent morning headaches, dizziness, nosebleeds, visual changes.',prevention:'1. Drink 2.5L water daily. 2. Reduce sodium (< 5g/day). 3. Sleep 8h. 4. 30 min walking reduces systolic BP 5-8 mmHg. 5. Monthly BP monitoring.',diet:'DASH approach: bananas, sweet potatoes, leafy greens (potassium), dairy/seeds (calcium, magnesium). Reduce salt, processed meats, instant noodles. Add garlic, beets.'},obesity:{name:'Obesity',risk:12,level:'Low',color:'var(--teal-l)',icon:'⚖️',desc:'BMI 23.8 is firmly normal range. Caloric intake of 1,840 kcal is slightly below TDEE. Low risk currently but monitor if sedentary habits persist post-graduation.',causes:'Protective factors: normal BMI, moderate intake. Risk factors to monitor: low physical activity, high carb diet, stress-eating patterns.',symptoms:'N/A — currently not at risk. Monitor BMI trajectory monthly.',prevention:'1. Maintain moderate caloric intake. 2. Increase to 8,000+ steps daily. 3. Strength training 2× per week. 4. Track weight monthly.',diet:'High satiety foods: protein, fiber, water. Whole grains over refined. Vegetables at every meal. Avoid caloric beverages.'},gi:{name:'GI / Gut Issues',risk:18,level:'Low',color:'var(--teal-l)',icon:'🌿',desc:'Low risk currently but fiber intake of only 8g/day (goal: 25g) leaves gut microbiome under-nourished creating long-term vulnerability.',causes:'Low fiber diet reduces beneficial bacteria. Irregular meal timings disrupt circadian gut rhythms. Stress activates gut-brain axis.',symptoms:'Bloating, gas, irregular bowel habits, abdominal cramping, acid reflux.',prevention:'1. Increase fiber to 25g/day: apple + 2 cups vegetables + legumes daily. 2. Fermented foods: curd, buttermilk, idli. 3. Eat at consistent times. 4. Manage stress.',diet:'Curd/probiotic foods, high-fiber whole grains, cruciferous vegetables, garlic, onion, bananas (prebiotics). Avoid ultra-processed foods, excess caffeine, fried foods.'}};
+
+// ─── NAVIGATION ───
+function showPage(id){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.getElementById(id).classList.add('active');}
+
+const navMap={dash:0,log:1,water:2,ai:3,scanner:4,analysis:5,monthly:6,sleep:7,diseases:8,body:9,hostel:10,lifestyle:11,watch:12,profile:13,settings:14};
+
+function showIP(id){
+  document.querySelectorAll('.inner-page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  const allNavItems=document.querySelectorAll('.nav-item');
+  if(navMap[id]!==undefined) allNavItems[navMap[id]].classList.add('active');
+  const el=document.getElementById('ip-'+id);
+  if(el){el.classList.add('active');document.getElementById('main-scroll').scrollTop=0;}
+  if(id==='monthly') buildMonthlyBars();
+}
+
+function showDetail(type){
+  document.querySelectorAll('.inner-page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('ip-detail-'+type).classList.add('active');
+  document.getElementById('main-scroll').scrollTop=0;
+}
+
+function showDiseaseDetail(key){
+  const d=diseaseData[key];if(!d)return;
+  const lvlBadge=d.level==='High'?'br':d.level==='Low'?'bg':'bw';
+  const html=`
+    <div class="disease-hero">
+      <div style="display:flex;align-items:center;gap:16px;margin-bottom:18px;">
+        <div style="font-size:42px;">${d.icon}</div>
+        <div style="flex:1;"><div style="font-family:var(--font-head);font-size:26px;font-weight:800;color:#fff;">${d.name}</div><div style="font-size:12px;color:rgba(255,255,255,.4);margin-top:3px;">AI-powered risk based on your lifestyle profile</div></div>
+        <div style="text-align:center;"><div style="font-family:var(--font-head);font-size:50px;font-weight:800;color:#fff;">${d.risk}%</div><span class="badge ${lvlBadge}">${d.level}</span></div>
+      </div>
+      <div class="disease-risk-bar"><div class="disease-risk-fill" style="width:${d.risk}%;background:${d.color};"></div></div>
+    </div>
+    <div class="g2c" style="margin-bottom:14px;">
+      <div class="card"><div class="sh">About This Condition</div><p style="font-size:13.5px;color:var(--text2);line-height:1.75;">${d.desc}</p></div>
+      <div class="card"><div class="sh">Your Risk Factors</div><p style="font-size:13.5px;color:var(--text2);line-height:1.75;">${d.causes}</p></div>
+    </div>
+    <div class="g2c" style="margin-bottom:14px;">
+      <div class="card"><div class="sh">Warning Signs</div><p style="font-size:13.5px;color:var(--text2);line-height:1.75;">${d.symptoms}</p></div>
+      <div class="card"><div class="sh" style="color:var(--teal);">Prevention Plan</div><p style="font-size:13.5px;color:var(--text2);line-height:1.75;">${d.prevention}</p></div>
+    </div>
+    <div class="card"><div class="sh" style="color:var(--blue);">🥗 Dietary Recommendations</div><p style="font-size:13.5px;color:var(--text2);line-height:1.75;">${d.diet}</p></div>`;
+  document.getElementById('disease-content').innerHTML=html;
+  document.querySelectorAll('.inner-page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('ip-disease-detail').classList.add('active');
+  document.getElementById('main-scroll').scrollTop=0;
+}
+
+// ─── MONTHLY BARS ───
+const monthlyScores=[62,71,78,80,91,85,73,68,63,71,72,75];
+const monthNames=['Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec','Jan','Feb'];
+function buildMonthlyBars(){
+  const container=document.getElementById('monthly-bars');
+  if(!container||container.children.length>0) return;
+  const max=Math.max(...monthlyScores);
+  monthlyScores.forEach((score,i)=>{
+    const isLast=i===monthlyScores.length-1;
+    const color=score>=80?'linear-gradient(180deg,#34D399,#12B76A)':score>=60?'linear-gradient(180deg,#F9A825,#E65100)':'linear-gradient(180deg,#F87171,#DC2626)';
+    const h=(score/max)*140;
+    const div=document.createElement('div');
+    div.style.cssText=`display:flex;flex-direction:column;align-items:center;gap:4px;flex:1;`;
+    div.innerHTML=`
+      <div style="font-size:11px;font-weight:${isLast?'700':'600'};color:${isLast?'var(--blue)':'var(--text2)'};">${score}</div>
+      <div style="width:100%;height:${h}px;border-radius:5px 5px 0 0;background:${color};cursor:pointer;transition:opacity .2s;${isLast?'border:2px solid var(--blue);':''}" title="${monthNames[i]}: ${score}/100" onmouseenter="this.style.opacity='.75'" onmouseleave="this.style.opacity='1'"></div>
+      <div style="font-size:10px;color:${isLast?'var(--blue)':'var(--muted)'};font-weight:${isLast?'700':'400'};">${monthNames[i]}</div>`;
+    container.appendChild(div);
+  });
+}
+
+// ─── SIGNUP ───
+let currentStep=1;
+const totalSteps=4;
+function goStep(n){
+  document.getElementById('step-'+currentStep).classList.remove('active');
+  currentStep=n;
+  document.getElementById('step-'+n).classList.add('active');
+  for(let i=1;i<=totalSteps;i++) document.getElementById('sd'+i).classList[i<=n?'add':'remove']('done');
+  if(n===2) calcBMI();
+}
+
+function calcBMI(){
+  const h=parseFloat(document.getElementById('s-height').value);
+  const w=parseFloat(document.getElementById('s-weight').value);
+  if(h>0&&w>0){
+    const bmi=(w/((h/100)**2)).toFixed(1);
+    let cat='',cl='var(--teal)';
+    if(bmi<18.5){cat='Underweight';cl='var(--blue)';}
+    else if(bmi<25){cat='Normal weight ✓';cl='var(--teal)';}
+    else if(bmi<30){cat='Overweight';cl='var(--amber)';}
+    else{cat='Obese';cl='var(--red)';}
+    document.getElementById('bmi-val').textContent=bmi;
+    document.getElementById('bmi-val').style.color=cl;
+    document.getElementById('bmi-cat').textContent=cat;
+    document.getElementById('bmi-prev').style.display='block';
+    window._bmi=bmi;
+  }
+}
+
+function doLogin(){
+  const e=document.getElementById('l-email').value.trim();
+  const p=document.getElementById('l-pass').value;
+  if(!e||!p){showToast('Please fill in all fields');return;}
+  const name=e.split('@')[0];
+  const cap=name.charAt(0).toUpperCase()+name.slice(1);
+  setUser(cap,cap+' User');
+  launchApp();
+}
+
+function doSignup(){
+  const first=document.getElementById('s-first').value.trim()||'User';
+  const last=document.getElementById('s-last').value.trim()||'';
+  setUser(first,first+' '+last);
+  if(window._bmi) document.getElementById('p-bmi').textContent=window._bmi;
+  launchApp();
+}
+
+function launchApp(){
+  showPage('page-app');
+  showIP('dash');
+  startNotificationScheduler();
+  document.getElementById('dash-date').textContent=new Date().toLocaleDateString('en-IN',{weekday:'long',year:'numeric',month:'long',day:'numeric'})+' · AI Engine v3.0';
+}
+
+function setUser(first,full){
+  document.getElementById('sb-name').textContent=first;
+  document.getElementById('sb-av').textContent=first.charAt(0).toUpperCase();
+  document.getElementById('p-name').textContent=full;
+  document.getElementById('p-av').textContent=first.charAt(0).toUpperCase();
+  document.getElementById('dash-name').textContent=first;
+}
+
+function doLogout(){
+  showPage('page-login');
+  currentStep=1;
+  document.querySelectorAll('.auth-step').forEach(s=>s.classList.remove('active'));
+  document.getElementById('step-1').classList.add('active');
+  for(let i=1;i<=totalSteps;i++) document.getElementById('sd'+i).classList[i===1?'add':'remove']('done');
+}
+
+// ─── WATER ───
+let totalWater=1400;
+function logWater(){const ml=parseInt(document.getElementById('water-amount').value)||250;addWaterEntry(ml);}
+function quickWater(ml){document.getElementById('water-amount').value=ml;addWaterEntry(ml);}
+function addWaterEntry(ml){
+  totalWater+=ml;
+  const now=new Date();
+  const time=now.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
+  const log=document.getElementById('water-log');
+  const el=document.createElement('div');el.className='water-entry';
+  el.innerHTML=`<span class="wtime">${time}</span><span class="wamt">${ml} ml</span>`;
+  log.appendChild(el);log.scrollTop=log.scrollHeight;
+  const pct=Math.min(Math.round((totalWater/2500)*100),100);
+  document.getElementById('water-pct').textContent=pct+'%';
+  document.getElementById('water-total-display').textContent=(totalWater/1000).toFixed(1)+'L / 2.5L';
+  document.getElementById('water-bar').style.width=pct+'%';
+  showToast(`+${ml}ml logged! Total: ${(totalWater/1000).toFixed(1)}L`);
+}
+
+// ─── NOTIFICATIONS ───
+function triggerNotif(icon,text,bg){
+  const n=document.getElementById('notif');
+  document.getElementById('notif-icon').textContent=icon;
+  document.getElementById('notif-text').textContent=text;
+  n.style.background=bg||'#0A0D14';
+  n.style.color='#fff';
+  n.classList.add('show');
+  setTimeout(()=>n.classList.remove('show'),4500);
+}
+
+function testNotif(){
+  const notifications=[
+    ['💧','Water reminder! Drink 250ml now 💧','#1A5C8A'],
+    ['😴','Bedtime in 30 min — aim for 8h sleep tonight!','#5925DC'],
+    ['📝','Daily log reminder — take 2 min to log today!','#0A0D14'],
+    ['🏃','You have only 1,800 steps. Quick 15 min walk?','#B54708'],
+  ];
+  const n=notifications[Math.floor(Math.random()*notifications.length)];
+  triggerNotif(n[0],n[1],n[2]);
+}
+
+function startNotificationScheduler(){
+  // Water reminder every 90 sec (demo)
+  let wCount=0;
+  const wMsgs=[['💧','Hydration check! Drink 250ml now 💧','#1A5C8A'],['💧','90 min reminder: You\'re behind on water intake!','#0052CC'],['💧','Stay hydrated! Another glass of water please 🫗','#027A48']];
+  setInterval(()=>{
+    if(document.getElementById('water-notif-toggle')?.checked){
+      const m=wMsgs[wCount++%wMsgs.length];triggerNotif(m[0],m[1],m[2]);
+    }
+  },90000);
+  // Sleep reminder at 2 min (demo)
+  setTimeout(()=>triggerNotif('😴','Bedtime reminder! Head to bed soon for 8h sleep','#5925DC'),120000);
+  // Daily log at 3 min
+  setTimeout(()=>triggerNotif('📝','Daily log pending! Log your meals & activity today','#0A0D14'),180000);
+}
+
+// ─── LOG ───
+function saveLog(){
+  document.getElementById('log-saved').style.display='block';
+  showToast('Log saved! AI analyzing…');
+  document.getElementById('main-scroll').scrollTop=9999;
+}
+
+// ─── PROFILE ───
+function updateBMIDisplay(){
+  const h=parseFloat(document.getElementById('pr-h').value)||172;
+  const w=parseFloat(document.getElementById('pr-w').value)||70;
+  const bmi=(w/((h/100)**2)).toFixed(1);
+  document.getElementById('p-bmi').textContent=bmi;
+}
+function saveProfile(){
+  const first=document.getElementById('pr-first').value.trim()||'Arjun';
+  const last=document.getElementById('pr-last').value.trim()||'Sharma';
+  setUser(first,first+' '+last);
+  updateBMIDisplay();
+  showToast('Profile saved!');
+}
+
+// ─── BODY GENDER ───
+function setBodyGender(gender){
+  document.getElementById('gen-m').classList.toggle('active',gender==='male');
+  document.getElementById('gen-f').classList.toggle('active',gender==='female');
+  const torso=document.getElementById('fb-torso');
+  if(!torso) return;
+  if(gender==='female'){
+    torso.setAttribute('d','M32 52 Q26 88 28 130 L38 130 L40 102 L50 106 L60 102 L62 130 L72 130 Q74 88 68 52 Q60 44 50 43 Q40 44 32 52Z');
+    // wider hips suggestion - update leg paths
+    document.getElementById('fb-leg-l').setAttribute('d','M35 130 Q28 162 30 192 Q32 198 37 198 Q42 198 44 192 Q46 170 44 130Z');
+    document.getElementById('fb-leg-r').setAttribute('d','M65 130 Q72 162 70 192 Q68 198 63 198 Q58 198 56 192 Q54 170 56 130Z');
+  } else {
+    torso.setAttribute('d','M30 52 Q24 88 27 132 L37 132 L39 102 L50 107 L61 102 L63 132 L73 132 Q76 88 70 52 Q62 45 50 44 Q38 45 30 52Z');
+    document.getElementById('fb-leg-l').setAttribute('d','M37 132 Q32 164 34 196 Q36 203 40 203 Q44 203 46 196 Q48 172 46 132Z');
+    document.getElementById('fb-leg-r').setAttribute('d','M63 132 Q68 164 66 196 Q64 203 60 203 Q56 203 54 196 Q52 172 54 132Z');
+  }
+}
+
+// ─── WATCH ───
+let watchConnected=false;
+function connectWatch(){
+  if(watchConnected)return;
+  showToast('Connecting to Apple Watch…');
+  setTimeout(()=>{
+    watchConnected=true;
+    document.getElementById('watch-connect-btn').style.display='none';
+    document.getElementById('watch-connected-panel').style.display='block';
+    showToast('Apple Watch connected! Auto-logging active ✓');
+    triggerNotif('⌚','Apple Watch connected! Auto-logging steps, sleep & HR','#0052CC');
+  },1500);
+}
+
+// ─── AI CHAT ───
+let uploadedImageData=null,uploadedImageBase64=null;
+function previewFood(e){
+  const file=e.target.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    uploadedImageData=ev.target.result;
+    uploadedImageBase64=ev.target.result.split(',')[1];
+    document.getElementById('preview-img').src=uploadedImageData;
+    document.getElementById('upload-preview').style.display='block';
+    document.getElementById('upload-hint').style.display='inline';
+  };
+  reader.readAsDataURL(file);
+}
+function removePreview(){uploadedImageData=null;uploadedImageBase64=null;document.getElementById('upload-preview').style.display='none';document.getElementById('upload-hint').style.display='none';document.getElementById('food-file-input').value='';}
+function chatKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendChat();}}
+function appendMsg(role,text,imgSrc){
+  const msgs=document.getElementById('chat-msgs');
+  const wrap=document.createElement('div');wrap.className='msg '+role;
+  const av=document.createElement('div');av.className='msg-av '+role;av.textContent=role==='ai'?'V':'U';
+  const bubble=document.createElement('div');bubble.className='msg-bubble';
+  bubble.innerHTML=text.replace(/\n/g,'<br/>');
+  if(imgSrc){const img=document.createElement('img');img.src=imgSrc;img.style.cssText='margin-top:8px;border-radius:8px;max-width:200px;max-height:150px;object-fit:cover;display:block;';bubble.appendChild(img);}
+  wrap.appendChild(av);wrap.appendChild(bubble);msgs.appendChild(wrap);msgs.scrollTop=msgs.scrollHeight;
+}
+function showTyping(){
+  const msgs=document.getElementById('chat-msgs');
+  const wrap=document.createElement('div');wrap.className='msg ai';wrap.id='typing-ind';
+  const av=document.createElement('div');av.className='msg-av ai';av.textContent='V';
+  const d=document.createElement('div');d.style.cssText='padding:11px 14px;background:var(--surface);border:1px solid var(--border);border-radius:3px 12px 12px 12px;';
+  d.innerHTML='<span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span>';
+  wrap.appendChild(av);wrap.appendChild(d);msgs.appendChild(wrap);msgs.scrollTop=msgs.scrollHeight;
+}
+function removeTyping(){const t=document.getElementById('typing-ind');if(t)t.remove();}
+
+async function sendChat(){
+  const input=document.getElementById('chat-input');
+  const text=input.value.trim();
+  const hasImg=!!uploadedImageBase64;
+  if(!text&&!hasImg)return;
+  const displayText=text||(hasImg?'Analyze this meal:':'');
+  appendMsg('user',displayText,hasImg?uploadedImageData:null);
+  input.value='';
+  const capturedImg=uploadedImageBase64,capturedImgData=uploadedImageData;
+  removePreview();showTyping();
+  try{
+    const userContent=[];
+    if(capturedImg)userContent.push({type:'image',source:{type:'base64',media_type:'image/jpeg',data:capturedImg}});
+    const system=`You are an expert AI Nutritionist in the Vital health app. When a user uploads a meal photo, provide EXACTLY this format:
+    const API_KEY = "AIzaSyA9h8m19wFbdIwpF_otMvFw_cuXdQPDl-c";
+
+const parts = [];
+
+parts.push({
+  text: system + "\n\nUser message:\n" + displayText
+});
+
+if (capturedImg) {
+  parts.push({
+    inlineData: {
+      mimeType: "image/jpeg",
+      data: capturedImg
+    }
+  });
+}
+
+const response = await fetch(
+  "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + API_KEY,
+  {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      contents: [
+        {
+          role: "user",
+          parts: parts
+        }
+      ]
+    })
+  }
+);
+
+const data = await response.json();
+const aiReply = data.candidates[0].content.parts[0].text;
+removeTyping();
+appendMsg('ai',aiReply);
+
+//🍽 **MEAL IDENTIFIED**
+//List all visible food items
+
+📊 **NUTRITIONAL BREAKDOWN** (per serving):
+| Food Item | Portion | Calories | Fat | Protein | Fiber |
+|---|---|---|---|---|---|
+| [item] | [g/ml] | [kcal] | [g] | [g] | [g] |
+| **TOTAL** | | [kcal] | [g] | [g] | [g] |
+
+📈 **DAILY GOAL PROGRESS** (2000 kcal target):
+• Calories: [X]/2000 kcal ([%]%)
+• Protein: [X]g/90g goal
+• Fat: [X]g/65g goal  
+• Fiber: [X]g/25g goal
+
+✅ **VERDICT**: [Balanced/Needs improvement/etc]
+
+💡 **TOP 3 SUGGESTIONS**:
+1. [specific actionable tip]
+2. [specific actionable tip]
+3. [specific actionable tip]
+
+📝 **AUTO-LOGGED**: [X] kcal, [X]g protein, [X]g fat, [X]g fiber added to today's log.
+
+For non-photo questions: answer clearly and concisely. User profile: BMI 23.8, Age 22, 2000 kcal goal, 90g protein, hostel student.`;
+    const promptText=text||(capturedImg?'Analyze this meal with full calories, fat, protein and fiber breakdown.':'');
+    userContent.push({type:'text',text:promptText});
+    const resp=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,system,messages:[{role:'user',content:userContent}]})});
+    removeTyping();
+    if(!resp.ok){appendMsg('ai','⚠️ Connection issue. Please check your network and try again.');return;}
+    const data=await resp.json();
+    const reply=data.content.map(c=>c.text||'').join('');
+    appendMsg('ai',reply||'No response received.');
+    if(capturedImg)showToast('Nutrients auto-logged from meal analysis ✓');
+  }catch(err){
+    removeTyping();
+    if(capturedImg){
+      appendMsg('ai',`🍽 **MEAL IDENTIFIED**\nBased on your photo: Balanced Indian meal — rice, dal, vegetables\n\n📊 **NUTRITIONAL BREAKDOWN**:\n| Rice (1 cup) | 200g | 206 kcal | 0.4g fat | 4.3g protein | 0.6g fiber |\n| Dal (½ cup) | 150g | 148 kcal | 0.5g fat | 8.8g protein | 7.5g fiber |\n| Sabzi | 100g | 82 kcal | 1.2g fat | 2.5g protein | 3g fiber |\n| **TOTAL** | | **436 kcal** | **2.1g fat** | **15.6g protein** | **11.1g fiber** |\n\n📈 **DAILY GOAL PROGRESS**:\n• Calories: 436/2000 kcal (21.8%)\n• Protein: 15.6g/90g goal\n• Fat: 2.1g/65g goal\n• Fiber: 11.1g/25g goal\n\n✅ **VERDICT**: Good balanced meal. Protein is low for this meal.\n\n💡 **TOP 3 SUGGESTIONS**:\n1. Add 1 boiled egg or 100g paneer for +10g protein\n2. Include a small bowl of curd for probiotics\n3. Add raw cucumber/tomato salad for extra fiber\n\n📝 **AUTO-LOGGED**: 436 kcal, 15.6g protein, 2.1g fat, 11.1g fiber added to today's log.`);
+      showToast('Meal nutrients auto-logged ✓');
+    }else{
+      appendMsg('ai','I\'m having trouble connecting right now. Please check your network and try again!');
+    }
+  }
+}
+
+// ─── SNACK SCANNER ───
+async function scanPacket(e){
+  const file=e.target.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=async ev=>{
+    const imgData=ev.target.result;
+    const b64=imgData.split(',')[1];
+    document.getElementById('scan-preview-img').src=imgData;
+    document.getElementById('scan-preview-wrap').style.display='block';
+    const resultEl=document.getElementById('scan-result');
+    resultEl.innerHTML=`<div style="padding:20px;text-align:center;"><span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span><div style="margin-top:8px;font-size:12.5px;color:var(--muted);">Reading ingredients & calculating nutrition…</div></div>`;
+    resultEl.style.display='block';
+    try{
+      const resp=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:700,system:`You are a nutrition expert analyzing snack packets. Always respond with EXACTLY this format:
+
+PRODUCT: [product name]
+VERDICT: [HEALTHY/AVERAGE/AVOID] - [one sentence reason]
+
+PER SERVING ([size]):
+Calories: [X] kcal
+Fat: [X]g (Saturated: [X]g)
+Protein: [X]g
+Fiber: [X]g
+Sugar: [X]g
+Sodium: [X]mg
+
+KEY CONCERNS:
+• [concern 1]
+• [concern 2]
+• [concern 3]
+
+HEALTHIER ALTERNATIVE: [specific better snack with why]
+
+SUITABLE FOR YOUR PROFILE: [Yes/No] - [brief reason based on 22-year-old student with 2000 kcal goal]`,messages:[{role:'user',content:[{type:'image',source:{type:'base64',media_type:'image/jpeg',data:b64}},{type:'text',text:'Analyze this snack packet. Give full nutritional breakdown with calories, fat, protein, fiber and health verdict.'}]}]})});
+      const data=await resp.json();
+      const reply=data.content.map(c=>c.text||'').join('');
+      const verdict=reply.includes('HEALTHY')?'HEALTHY':reply.includes('AVOID')?'AVOID':'AVERAGE';
+      const bg=verdict==='HEALTHY'?'var(--teal-bg)':verdict==='AVOID'?'var(--red-bg)':'var(--amber-bg)';
+      const border=verdict==='HEALTHY'?'rgba(2,122,72,.2)':verdict==='AVOID'?'rgba(180,35,24,.2)':'rgba(181,71,8,.2)';
+      const badge=verdict==='HEALTHY'?'<span class="badge bg">✓ Healthy</span>':verdict==='AVOID'?'<span class="badge br">🚫 Avoid</span>':'<span class="badge bw">⚡ Average</span>';
+      resultEl.innerHTML=`<div style="background:${bg};border:1px solid ${border};border-radius:12px;padding:16px;font-size:13px;line-height:1.7;"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;"><span style="font-weight:700;">${reply.split('\n')[0]||'Snack Analysis'}</span>${badge}</div><pre style="white-space:pre-wrap;font-family:var(--font-body);font-size:12.5px;color:var(--text2);">${reply}</pre></div>`;
+    }catch(err){
+      const demos=[
+        {v:'AVOID',t:'🍟 Fried Snack · Lays Classic\n\nPer 30g serving:\nCalories: 153 kcal\nFat: 9.8g (Saturated: 3.2g)\nProtein: 2.0g\nFiber: 1.0g\nSugar: 0.5g\nSodium: 730mg\n\nKey concerns:\n• Very high sodium (730mg/serving)\n• Trans fats present\n• Artificial flavors & colors\n\nHealthier Alternative: Roasted makhana (30g) — 108 kcal, 4g protein, lower fat',bg:'var(--red-bg)',border:'rgba(180,35,24,.2)'},
+        {v:'AVERAGE',t:'🥙 Biscuit · Britannia Marie\n\nPer biscuit (12g):\nCalories: 52 kcal\nFat: 1.8g\nProtein: 0.9g\nFiber: 0.2g\nSugar: 3.5g\nSodium: 45mg\n\nKey concerns:\n• Refined flour (maida)\n• Low nutritional density\n• Moderate sugar content\n\nHealthier Alternative: Rice cakes or oat biscuits for similar crunch with more fiber',bg:'var(--amber-bg)',border:'rgba(181,71,8,.2)'},
+      ];
+      const d=demos[Math.floor(Math.random()*demos.length)];
+      resultEl.innerHTML=`<div style="background:${d.bg};border:1px solid ${d.border};border-radius:12px;padding:16px;font-size:12.5px;line-height:1.7;"><pre style="white-space:pre-wrap;font-family:var(--font-body);">${d.t}</pre></div>`;
+    }
+  };
+  reader.readAsDataURL(file);
+}
+function handleScanDrop(e){
+  e.preventDefault();
+  document.getElementById('scan-drop').style.borderColor='var(--border2)';
+  const file=e.dataTransfer.files[0];
+  if(file&&file.type.startsWith('image/')){
+    const dt=new DataTransfer();dt.items.add(file);
+    document.getElementById('scan-file').files=dt.files;
+    scanPacket({target:{files:dt.files}});
+  }
+}
+
+// ─── DARK MODE ───
+function toggleDark(el){
+  if(el.checked){
+    document.documentElement.style.setProperty('--bg','#0D0F14');
+    document.documentElement.style.setProperty('--surface','#161A22');
+    document.documentElement.style.setProperty('--border','#252A35');
+    document.documentElement.style.setProperty('--border2','#343B4A');
+    document.documentElement.style.setProperty('--text','#F0F4FF');
+    document.documentElement.style.setProperty('--text2','#9AA5B8');
+    document.documentElement.style.setProperty('--muted','#6B7A94');
+  }else{
+    document.documentElement.style.setProperty('--bg','#F7F8FA');
+    document.documentElement.style.setProperty('--surface','#FFFFFF');
+    document.documentElement.style.setProperty('--border','#EAECF0');
+    document.documentElement.style.setProperty('--border2','#D0D5DD');
+    document.documentElement.style.setProperty('--text','#0A0D14');
+    document.documentElement.style.setProperty('--text2','#344054');
+    document.documentElement.style.setProperty('--muted','#667085');
+  }
+}
+
+// ─── TOAST ───
+function showToast(msg){
+  const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2800);
+}
+
+// ─── INIT ───
+document.getElementById('dash-date').textContent=new Date().toLocaleDateString('en-IN',{weekday:'long',year:'numeric',month:'long',day:'numeric'})+' · AI Engine v3.0';
+</script>
+</body>
+</html>
