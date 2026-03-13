@@ -1,4 +1,4 @@
-# Vital Health App 🩺
+# Vital Health App 
 
 A lightweight, frontend-first web application designed to help users manage and interact with their personal health journey. 
 
